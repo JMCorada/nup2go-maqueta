@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NUP2GO en la app V2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<style>
+/* Layout: barra de control del prototipo arriba; debajo, la aplicación a 1440 px de ancho dentro de un contenedor con scroll horizontal propio */
+:root{
+  --cyan:#00ABC7; --cyan-d:#009ABA; --orange:#FF9C00; --danger:#FF4C5D; --ok:#4CAF50;
+  --ink:rgba(69,90,100,.87); --ink2:rgb(69,90,100); --soft:rgba(69,90,100,.62); --faint:rgba(69,90,100,.42);
+  --line:rgba(0,0,0,.12); --grey:#F2F2F2; --content:#FAFCFD; --white:#FFFFFF;
+  --ctl-bg:#22313A; --ctl-fg:#E6EEF1; --ctl-soft:#93A6AE; --note-bg:#FFF7E8; --note-line:#F1C27D; --note-ink:#6B4A12;
+  --page:#E9EEF0; --violet:#5C3B9E;
+  --f:"Titillium Web",sans-serif,Helvetica,Arial;
+}
+/* la maqueta reproduce la aplicación, que solo existe en claro; se fija el aspecto en los dos temas */
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--f);margin:0}
+.mi{font-family:"Material Icons";font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";-webkit-font-smoothing:antialiased;vertical-align:middle;max-width:1.2em;overflow:hidden}
+button{font-family:var(--f)}
+
+/* ---------- barra de control ---------- */
+.ctl{background:var(--ctl-bg);color:var(--ctl-fg);padding-top:14px}
+.ptitle{padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-bottom:14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.ptitle b{font-size:17px;font-weight:600}
+.ptitle span{font-size:12.5px;color:var(--ctl-soft)}
+.ctl .ptabs{display:grid;width:100%;grid-template-columns:1fr 1fr;background:none;border-radius:0;padding:0;gap:0;border-bottom:1px solid rgba(255,255,255,.12)}
+.ctl .ptabs button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 16px 12px;border-bottom:3px solid transparent;color:var(--ctl-soft);text-align:center;font-family:var(--f)}
+.ctl .ptabs button:hover{background:rgba(255,255,255,.04)}
+.ctl .ptabs button:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+.ctl .ptabs .pt-l{font-size:20px;font-weight:600;letter-spacing:.01em}
+.ctl .ptabs .pt-c{font-size:12.5px}
+.ctl .ptabs button[aria-pressed="true"]{color:#fff;border-bottom-color:var(--cyan);background:rgba(0,171,199,.12)}
+.ctl .ptabs button[aria-pressed="true"] .pt-c{color:#9FE3EE}
+.ppanel{background:#2C3D47;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:12px 0}
+.prow{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding-bottom:12px}
+.util{margin-left:auto}
+.util>span,.util2>span{opacity:.8}
+.util .seg button,.util2 .seg button{font-size:12.5px;padding:4px 9px}
+.grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.grp>span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--ctl-soft)}
+.seg{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.08);border-radius:6px;padding:3px;gap:3px}
+.seg button{background:none;border:0;color:var(--ctl-soft);padding:5px 11px;border-radius:4px;font-size:13.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--white);color:var(--ctl-bg);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.grp[hidden]{display:none!important}
+.seg button[hidden]{display:none!important}
+.chint{font-style:normal;font-size:12.5px;font-weight:600;color:#FFD38A;display:inline-flex;align-items:center;gap:6px;background:rgba(255,156,0,.14);border:1px solid rgba(255,156,0,.45);border-radius:14px;padding:3px 10px 3px 7px}
+.chint svg{flex:none}
+.ctl .pnav{column-gap:14px;display:flex;flex-wrap:wrap;align-items:stretch;background:none;border-radius:0;padding:0;gap:4px;border-top:1px solid rgba(255,255,255,.1)}
+.ctl .pnav>.scr,.ctl .subwrap>.scr{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--ctl-soft);font-size:14.5px;padding:11px 14px 9px;cursor:pointer}
+.ctl .pnav .scr[aria-pressed="true"]{background:none;color:#fff;font-weight:600;border-bottom-color:#fff}
+.subwrap{display:inline-flex;align-items:center;gap:4px}
+.subwrap[hidden]{display:none}
+.chips{background:rgba(255,255,255,.08);padding:2px;gap:2px;border-radius:12px}
+.chips button{font-size:12px;padding:3px 9px;border-radius:10px}
+.subwrap:not(.on) .chips{display:none}
+.subwrap .chips button[aria-pressed="true"]{background:rgba(255,255,255,.22);color:#fff}
+.subwrap.on .chips button[aria-pressed="true"]{background:var(--white);color:var(--ctl-bg)}
+/* ---------- lienzo ---------- */
+.stage{padding-inline:16px;padding-block:18px 40px;display:grid;gap:16px;justify-items:center}
+.scroller{width:100%;max-width:1442px;overflow-x:auto;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.notes{width:100%;max-width:1442px;background:var(--note-bg);border:1px solid var(--note-line);border-radius:6px;padding:14px 18px;color:var(--note-ink);font-size:14.5px;line-height:1.55}
+.notes h4{margin:0 0 6px;font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.notes .nintro{margin:0 0 10px;padding:10px 12px;background:rgba(255,255,255,.6);border-radius:4px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.notes b{color:#4A3000}
+
+/* ---------- aplicación ---------- */
+.app.bare{display:block;min-height:0;background:none}
+.app{width:1440px;height:auto;min-height:860px;background:var(--content);display:grid;grid-template-columns:256px 1fr;grid-template-rows:64px auto;color:var(--ink);font-size:16px;line-height:1.5}
+.hd{grid-column:1/-1;background:var(--cyan);display:flex;align-items:stretch;color:#fff}
+.hd .logo{width:256px;background:var(--cyan-d);display:flex;align-items:center;justify-content:center}
+.hd .logo svg{height:34px;width:auto}
+.hd nav{display:flex}
+.hd nav a{display:flex;align-items:center;padding:0 28px;font-size:18px;color:#fff;text-decoration:none;position:relative}
+.hd nav a.on{font-weight:700}
+.hd nav a.on:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:#fff}
+.hd .r{margin-left:auto;display:flex;align-items:center;gap:6px;padding-right:20px}
+.hd .r .ib{width:48px;height:48px;display:flex;align-items:center;justify-content:center;position:relative}
+.hd .r .badge{position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:9px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.hd .r .av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center}
+.sb{background:var(--white);box-shadow:2px 0 4.8px rgba(0,0,0,.04);display:flex;flex-direction:column;justify-content:space-between;padding:12px 0 14px;min-height:796px}
+.sb ul{list-style:none;margin:0;padding:0}
+.sb li{display:flex;align-items:center;gap:12px;padding:0 24px;height:61px;font-size:16px;color:var(--ink)}
+.sb li .mi{font-size:22px;color:var(--ink2)}
+.sb li.on{color:var(--cyan-d);font-weight:700}
+.sb li.on .mi{color:var(--cyan-d)}
+.sb .chat{margin:0 14px;border:1px solid rgba(69,90,100,.5);border-radius:20px;height:40px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--ink)}
+.sb .chat .mi{font-size:18px}
+.main{min-width:0;display:flex;flex-direction:column}
+.sub{height:72px;background:var(--white);box-shadow:0 1px 4px rgba(22,28,39,.08);display:flex;align-items:center;padding:0 28px;gap:16px;position:relative;z-index:1}
+.sub h1{font-size:28px;font-weight:500;margin:0;color:var(--ink)}
+.sub .rt{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:16px;color:var(--ink)}
+.sub .rt img{width:40px;height:40px}
+.sub .rt b{font-size:22px;font-weight:500;color:var(--cyan-d)}
+.sub .rt .muted{color:var(--soft)}
+.content{padding:24px 28px 32px;display:grid;gap:24px;align-content:start}
+
+/* tarjetas y piezas */
+.mcard{background:var(--white);border-radius:4px;box-shadow:0 0 4px rgba(0,0,0,.1);padding:16px 16px 18px}
+.mcard>h2{font-size:22px;font-weight:500;margin:0 0 14px;color:var(--ink);display:flex;align-items:baseline;gap:12px}
+.mcard>h2 small{margin-left:auto;font-size:13px;color:var(--soft);font-weight:400}
+.ctitle{text-align:center;color:var(--cyan-d);font-size:26px;font-weight:500;margin:6px 0 22px}
+.ctitle .mi{font-size:22px;color:var(--cyan-d)}
+.cols3{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;gap:28px;align-items:start;padding:4px 20px 6px}
+.vsep{background:var(--line);align-self:stretch}
+.kpi{text-align:center}
+.kpi h3{font-size:20px;font-weight:500;margin:0 0 12px;color:var(--ink)}
+.kpi .big{font-size:44px;font-weight:500;color:var(--cyan-d);line-height:1.1}
+.kpi .big small{font-size:18px;color:var(--soft);font-weight:400;margin-left:6px}
+.kpi p{margin:8px 0 0;font-size:14px;color:var(--soft)}
+.kpi .est{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);background:var(--grey);padding:2px 8px;border-radius:10px}
+.kpi.warn .big{color:var(--orange)}
+.lnk{color:var(--cyan-d);display:inline-flex;align-items:center;gap:4px;font-size:15px}
+.lnk .mi{font-size:18px}
+.cfoot{border-top:1px solid var(--line);margin-top:20px;padding-top:14px;display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+
+.btn{border-radius:4px;font-size:16px;padding:0 18px;height:36px;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;cursor:default;white-space:nowrap}
+.btn .mi{font-size:18px}
+.b-cyan{background:var(--cyan);color:#fff;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px rgba(0,0,0,.14),0 1px 5px rgba(0,0,0,.12)}
+.b-orange{background:var(--orange);color:#fff;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px rgba(0,0,0,.14),0 1px 5px rgba(0,0,0,.12);height:48px}
+.b-out{border-color:var(--line);background:var(--white);color:var(--ink)}
+.b-red{background:var(--danger);color:#fff}
+
+/* pestañas de facturas */
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#F5F8F9;border-bottom:1px solid var(--line)}
+.tabs span{height:48px;display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(0,0,0,.54);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs span.on{color:var(--cyan);border-bottom-color:var(--cyan);background:var(--content)}
+.filters{display:flex;gap:14px;align-items:center}
+.fld{border:1px solid rgba(0,0,0,.38);border-radius:4px;height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;position:relative;background:var(--white);font-size:16px;color:rgba(0,0,0,.87)}
+.fld .lb{position:absolute;top:-8px;left:10px;background:var(--content);padding:0 4px;font-size:11px;color:rgba(0,0,0,.6)}
+.fld .mi{color:rgba(0,0,0,.54)}
+.fld.grow{flex:1}
+.fld.sel{min-width:360px;justify-content:space-between}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tile{background:var(--white);border-radius:4px;box-shadow:0 0 4px rgba(0,0,0,.1);padding:16px 18px}
+.tile .tl{font-size:14px;color:var(--soft)}
+.tile .tv{font-size:32px;font-weight:500;color:var(--ink);line-height:1.2;margin-top:4px}
+.tile .tv small{font-size:16px;color:var(--soft);font-weight:400;margin-left:6px}
+.tile .tf{font-size:13.5px;color:var(--soft);margin-top:6px}
+.tile.cy .tv{color:var(--cyan-d)}
+.tile.or .tv{color:var(--orange)}
+.tbl{background:var(--white);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.tbl table{width:100%;border-collapse:collapse;font-size:16px;color:var(--ink2)}
+.tbl th{text-align:left;font-weight:700;height:56px;padding:0 8px;border-bottom:1px solid var(--line)}
+.tbl td{height:66px;padding:0 8px;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td small{display:block;font-size:13px;color:var(--soft)}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.st .mi{font-size:16px}
+.s-act{background:rgba(76,175,80,.12);color:#2E7D32}
+.s-end{background:var(--grey);color:var(--soft)}
+.s-bal{background:rgba(0,171,199,.12);color:#00708A}
+.s-tri{background:rgba(92,59,158,.1);color:#4B2E85}
+.s-inv{background:rgba(255,156,0,.14);color:#8A5200}
+.s-over{background:rgba(255,76,93,.1);color:#C2293A}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:12px;font-size:14px;color:var(--soft);padding:6px 4px 0}
+.pager .mi{color:var(--cyan);font-size:20px}
+.hint{font-size:14px;color:var(--soft)}
+
+/* suscripción */
+.subgrid{display:grid;grid-template-columns:minmax(0,1fr) 402px;gap:24px;align-items:start}
+.col{display:grid;gap:24px}
+.feat{display:flex;align-items:center;gap:12px;padding:10px 10px;border-radius:4px}
+.feat img{width:36px;height:36px;border-radius:50%}
+.feat .fn{color:var(--cyan-d);font-weight:500;font-size:16px}
+.feat .fd{display:block;font-size:13px;color:var(--ink)}
+.feat .fr{margin-left:auto;display:flex;align-items:center;gap:10px}
+.feat .ck{color:var(--ok)}
+.feat.n2g{background:rgba(0,171,199,.05);border:1px solid rgba(0,171,199,.28)}
+.feat.n2g.off{background:var(--white);border-color:var(--line)}
+.feat.n2g.off .fn{color:var(--soft)}
+.feat.n2g.off img{filter:grayscale(1);opacity:.6}
+.feat.n2g.pend{background:rgba(255,156,0,.05);border-color:rgba(255,156,0,.45)}
+.feat.n2g.due{background:rgba(255,76,93,.05);border-color:rgba(255,76,93,.45)}
+.feat .meta{font-size:13px;color:var(--soft);text-align:right;line-height:1.35}
+.more{text-align:center;margin-top:16px;font-size:16px;color:var(--ink);display:flex;justify-content:center;align-items:center;gap:8px}
+.gbox{background:var(--grey);border-radius:8px;min-height:48px;display:flex;align-items:center;gap:10px;padding:8px 12px;font-size:16px}
+.gbox .mi{font-size:20px;color:var(--ink2)}
+.gbox .right{margin-left:auto;white-space:nowrap}
+.gbox small{display:block;font-size:13px;color:var(--soft)}
+.side p{font-size:14px;margin:10px 0;color:var(--ink)}
+.side .tiny{font-size:12px;color:var(--soft);margin:8px 0 0}
+.wide{width:100%;justify-content:center}
+.contact{display:grid;gap:8px;font-size:16px;margin-top:6px}
+.contact div{display:flex;align-items:center;gap:8px}
+.contact .mi{font-size:20px;color:var(--ink2)}
+.contact .c{color:var(--cyan-d)}
+.contact .c .mi{color:var(--cyan-d)}
+.alert{display:flex;gap:14px;align-items:flex-start;border-radius:4px;padding:14px 18px;font-size:15.5px}
+.alert .mi{font-size:26px}
+.alert b{font-weight:600}
+.alert .acts{margin-left:auto;display:flex;gap:10px;align-self:center}
+.a-red{background:#FFF0F1;border:1px solid rgba(255,76,93,.5);color:#8E1C2A}
+.a-red .mi{color:var(--danger)}
+.a-info{background:#EAF7FA;border:1px solid rgba(0,171,199,.4);color:#0A5C6B}
+.a-info .mi{color:var(--cyan-d)}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 10px}
+.step{text-align:center;padding:0 10px}
+.step .n{width:34px;height:34px;border-radius:50%;border:2px solid var(--cyan);color:var(--cyan-d);font-weight:600;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px}
+.step b{display:block;font-size:17px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.step p{margin:0;font-size:14.5px;color:var(--soft)}
+.diag{margin:22px 10px 0;border:1px solid var(--line);border-radius:4px;padding:16px 18px 12px;background:var(--white)}
+.diag h4{margin:0 0 4px;font-size:18px;font-weight:500;color:var(--ink)}
+.diag .dl{margin:0 0 10px;font-size:14.5px;color:var(--soft)}
+.dleg{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line);font-size:13.5px;color:var(--soft)}
+.dleg span{display:inline-block}
+.dleg i{width:12px;height:12px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:6px}
+.band{display:flex;gap:14px;align-items:flex-start;background:#FFF6E6;border:1px solid rgba(255,156,0,.45);border-radius:4px;padding:14px 18px;font-size:15.5px;color:var(--ink)}
+.band .mi{color:#C77700;font-size:26px}
+.band b{font-weight:600}
+.band .tt{display:block;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#A86200;margin-bottom:3px}
+.band .x{margin-left:auto;color:var(--soft);font-size:14px;white-space:nowrap;align-self:center}
+.sec2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 10px 0}
+.box{border:1px solid var(--line);border-radius:4px;padding:16px 18px;background:var(--white)}
+.box h4{margin:0 0 4px;font-size:18px;font-weight:500;color:var(--ink)}
+.box .dl{margin:0 0 12px;font-size:14.5px;color:var(--soft)}
+.trm{width:100%;border-collapse:collapse;font-size:15px}
+.trm th{text-align:left;font-weight:700;color:var(--ink2);padding:8px;border-bottom:1px solid var(--line)}
+.trm td{padding:9px 8px;border-bottom:1px solid var(--line)}
+.trm td:last-child,.trm th:last-child{text-align:right}
+.trm tr.on td{background:#E5F6F9;font-weight:600}
+.vlead{text-align:center;max-width:760px;margin:-10px auto 22px;font-size:16.5px;color:var(--ink)}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 28px;padding:0 20px 8px}
+.vt{display:flex;gap:14px;align-items:flex-start}
+.vic{flex:none;width:44px;height:44px;border-radius:50%;background:rgba(0,171,199,.1);display:flex;align-items:center;justify-content:center}
+.vic .mi{color:var(--cyan-d);font-size:22px}
+.vt b{display:block;font-size:16.5px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.vt p{margin:0;font-size:14.5px;color:var(--soft)}
+.mstage{background:#8E9498;border-radius:6px;padding:28px 28px 34px;display:grid;gap:30px}
+.mrow{display:grid;grid-template-columns:auto minmax(260px,1fr);gap:28px;align-items:start}
+.mcap{background:#fff;border-radius:6px;padding:16px 18px;font-size:14.5px;line-height:1.5;color:var(--ink);box-shadow:0 2px 10px rgba(0,0,0,.12);border-top:4px solid var(--cyan)}
+.mcap h5{margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#00708A}
+.mcap p{margin:0 0 8px}.mcap p:last-child{margin:0}
+.mcap .same{display:block;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:var(--soft);font-size:13.5px}
+/* réplica de los modals de la app (medidas tomadas de app.neuronup.com) */
+.nm{background:#fff;border-radius:4px;box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);color:rgba(69,90,100,.87);font-family:var(--f);font-size:16px;line-height:1.5;overflow:hidden}
+.nm-h{background:#434751;color:#fff;display:flex;align-items:center;position:relative}
+.nm-h .ic{width:40px;height:40px;flex:none}
+.nm-h .tt{font-weight:500;margin:0}
+.nm-h .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+.nm-h .x .mi{font-size:24px;color:#fff}
+.nm-dlg{width:640px}.nm-dlg .nm-h{height:65px;padding-left:24px;gap:8px}.nm-dlg .nm-h .tt{font-size:22px}
+.nm-wz{width:667px}.nm-wz .nm-h{height:56px;padding-left:12px;gap:4px}.nm-wz .nm-h .ic{width:36px;height:36px}.nm-wz .nm-h .tt{font-size:24px}
+.nm-b{padding:28px 32px 16px}
+.nm-who{display:flex;align-items:center;gap:8px;padding-bottom:15px;border-bottom:1px solid rgba(0,0,0,.12)}
+.nm-av{width:50px;height:50px;border-radius:50%;background:#DCE5E9;color:#6B7F88;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex:none}
+.nm-who h5{margin:0;font-size:20px;font-weight:500;color:#434751}
+.nm-who .st{margin-left:auto;color:#009ABA}
+.nm-cfg{display:block;font-weight:700;margin:16px 0 16px}
+.nm-pan{border:1px solid rgba(0,0,0,.12);border-radius:32px;margin-bottom:16px;background:#fff}
+.nm-ph{height:48px;display:flex;align-items:center;gap:12px;padding:0 24px}
+.nm-ph .mi{font-size:20px;color:rgba(69,90,100,.87)}
+.nm-ph .ch{margin-left:auto;font-size:24px}
+.nm-pc{margin:0 24px;border-top:1px solid rgba(0,0,0,.12);padding:16px 0 18px}
+.nm-pc .dur{font-size:14px;margin:0 0 16px}
+.nm-flds{display:flex;gap:15px}
+.nm-fld{flex:1;height:52px;border:1px solid rgba(0,0,0,.38);border-radius:4px;position:relative;display:flex;align-items:center;padding:0 12px 0 16px;font-size:16px;color:rgba(0,0,0,.87)}
+.nm-fld i{position:absolute;top:-9px;left:10px;background:#fff;padding:0 4px;font-style:normal;font-size:12px;color:rgba(0,0,0,.54)}
+.nm-fld .mi{margin-left:auto;font-size:24px;color:rgba(0,0,0,.54)}
+.nm-tg{display:flex;align-items:center;gap:16px;margin-top:16px}
+.nm-tg .home{font-size:24px;color:#009ABA}
+.nm-sw{width:36px;height:14px;border-radius:7px;background:rgba(0,0,0,.12);position:relative;margin-left:8px}
+.nm-sw b{position:absolute;left:-2px;top:-3px;width:20px;height:20px;border-radius:50%;background:#757575;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center}
+.nm-sw b:after{content:"";width:9px;height:2px;background:#fff}
+.nm-sw.on{background:rgba(0,171,199,.45)}.nm-sw.on b{left:18px;background:#00ABC7}
+.nm-sw.on b:after{width:5px;height:9px;background:none;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.nm-tg .yn{color:rgba(0,0,0,.87)}
+.nm-line{margin:10px 0 0;font-size:14px;color:rgba(69,90,100,.62)}
+.nm-meta{border-top:1px solid rgba(0,0,0,.12);padding-top:16px;font-size:14px;display:grid;gap:16px}
+.nm-meta div{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.nm-meta .mi{font-size:18px}
+.nm-meta span+.mi{margin-left:16px}
+.nm-f{border-top:1px solid rgba(0,0,0,.12);display:flex;align-items:center;gap:8px;padding:18px 24px}
+.nm-bt{height:36px;padding:0 16px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;font-size:16px;border:1px solid transparent;white-space:nowrap}
+.nm-bt.p{background:#00ABC7;color:#fff}.nm-bt.s{background:rgb(204,234,238);border-color:#009ABA;color:#009ABA}.nm-bt.o{background:#fff;border-color:rgba(0,0,0,.12);color:rgba(69,90,100,.87)}
+.nm-bt.dis{background:rgba(0,0,0,.12);color:rgba(0,0,0,.38)}
+.nm-f .k{margin-left:auto;font-size:24px}
+.nm-steps{display:flex;align-items:center;padding:24px 24px 0;gap:8px}
+.nm-steps .s{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nm-steps .n{width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.54);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nm-steps .s.on .n{background:#00ABC7}
+.nm-steps .ln{flex:1;height:1px;background:rgba(0,0,0,.12);margin:0 8px}
+.nm-steps .opt{display:block;font-size:12px;color:rgba(0,0,0,.54);line-height:1}
+.nm-wb{padding:30px 24px 0;text-align:center}
+.nm-wb h4{font-size:22px;font-weight:500;margin:0 0 8px}
+.nm-wb .dur{margin:0 0 16px}
+.nm-wb .nm-flds{margin:0 54px}
+.nm-wb .nm-tg{justify-content:center}
+.nm-wb .fbw{text-align:left;margin:0 0 0}
+.nm-asg{padding:16px 24px 18px}
+.nm-asg h5{margin:0 0 16px;font-size:20px;font-weight:500}
+.nm-asg .w{display:flex;align-items:center;gap:8px}
+.nm-asg .nm-av{width:40px;height:40px;font-size:14px}
+.nm-wf{border-top:1px solid rgba(0,0,0,.12);padding:16px 24px}
+.nm-wf .nm-bt{width:100%;height:48px;justify-content:center}
+.nm-fb{display:flex;gap:10px;text-align:left;border-radius:4px;padding:12px 14px;margin:16px 0 0;font-size:14.5px;line-height:1.5}
+.nm-fb>.mi{font-size:22px;flex:none}
+.nm-fb.info{background:#E8F6F9;border-left:3px solid #00ABC7}.nm-fb.info>.mi{color:#009ABA}
+.nm-fb.warn{background:#FFF4E2;border-left:3px solid #FF9C00}.nm-fb.warn>.mi{color:#C77700}
+.nm-fb.stop{background:#FFEFF0;border-left:3px solid #FF4C5D}.nm-fb.stop>.mi{color:#FF4C5D}
+.nm-fb b{font-weight:600;color:rgba(69,90,100,1)}
+.nm-fb .mt{display:block;margin-top:6px;font-size:13.5px;color:rgba(69,90,100,.7)}
+.nm-fb .ac{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.nm-days{display:flex;gap:8px;justify-content:center;margin:4px 0 14px}
+.nm-days span{width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.nm-days span.on{background:#00ABC7;border-color:#00ABC7;color:#fff}
+.nm-dlg .nm-h.nm-ph2{height:auto;display:block;padding:18px 24px 18px 22px;position:relative}
+.nm-ph2 .hr{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.nm-ph2 .x{top:36px!important}
+.nm-ph2 .ic{width:44px;height:44px}
+.nm-ph2 .lb{display:block;font-size:14px;opacity:.95}
+.nm-ph2 .tt{font-size:22px;font-weight:500;margin:0}
+.nm-pills{display:flex;gap:8px;flex-wrap:wrap}
+.nm-pills span{background:#E9EAEC;color:#434751;border-radius:18px;height:32px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:14.5px}
+.nm-pills .mi{font-size:18px;color:#434751}
+.nm-who2{display:flex;align-items:center;gap:12px;padding-bottom:15px;border-bottom:1px solid rgba(0,0,0,.12)}
+.nm-who2 .t{display:flex;flex-direction:column;line-height:1.3}
+.nm-who2 .t small{font-size:12.5px;color:rgba(69,90,100,.7)}
+.nm-who2 .t b{font-size:19px;font-weight:400;color:#434751}
+.nm-who2 .t strong{font-size:17px;font-weight:600;color:#5A6B74}
+.nm-who2 .st{margin-left:auto;color:#009ABA}
+.nm-steps .s.cur{position:relative}
+.nm-steps .s.cur:before{content:"";position:absolute;left:-14px;right:-14px;top:-24px;bottom:-26px;background:#E6E6E6;z-index:0}
+.nm-steps .s.cur>*{position:relative;z-index:1}
+.nm-steps .s.cur{z-index:0}
+.nm-pw{padding:20px 24px 4px;text-align:left}
+.nm-pw h4{font-size:24px;font-weight:400;margin:0 0 14px}
+.nm-pw p{margin:0 0 16px;font-size:15px}
+.nm-pw .q{font-size:17px;font-weight:600;color:#5A6B74;margin:18px 0 10px}
+.nm-cps{display:flex;flex-wrap:wrap;gap:6px}
+.nm-cps span{border:1px solid rgba(0,0,0,.25);border-radius:20px;height:32px;padding:0 11px;display:inline-flex;align-items:center;gap:4px;font-size:14px;color:rgba(69,90,100,.87)}
+.nm-cps span.on{background:#00ABC7;border-color:#00ABC7;color:#fff}
+.nm-cps .mi{font-size:16px}
+.nm-pdlg{width:716px}
+.nm-wb .one{width:300px;margin:0 auto}
+.nm-lk{color:#009ABA;text-decoration:underline}
+.pf-wrap{display:grid;grid-template-columns:420px minmax(0,1fr);min-height:760px}
+.pf-list{border-right:1px solid rgba(0,0,0,.08);padding:20px 22px 12px;display:flex;flex-direction:column;gap:14px;background:#fff}
+.pf-srch{border:1px solid rgba(0,0,0,.38);border-radius:4px;height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;color:rgba(0,0,0,.5)}
+.pf-srch .mi{color:rgba(0,0,0,.6)}
+.pf-it{display:flex;align-items:center;gap:12px;font-size:16.5px;color:var(--ink);padding:6px 4px}
+.pf-it.on{color:var(--cyan-d)}
+.pf-ph{width:44px;height:44px;border-radius:3px;background:#8D9BA2;flex:none;display:flex;align-items:center;justify-content:center}
+.pf-ph .mi{color:#fff;font-size:28px}
+.pf-it.on .pf-ph{background:#E9643B}
+.pf-new{border:1px solid var(--cyan-d);color:var(--cyan-d);border-radius:4px;height:44px;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:auto}
+.pf-cnt{text-align:right;font-size:14px;color:var(--soft)}
+.pf-main{padding:24px 28px}
+.pf-card{background:#fff;border-radius:4px;box-shadow:0 0 4px rgba(0,0,0,.1)}
+.pf-top{display:flex;justify-content:flex-end;padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.08);color:var(--ink);gap:8px;align-items:center}
+.pf-body{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:24px;padding:16px 16px 24px}
+.pf-head{display:flex;gap:22px;padding-bottom:20px;border-bottom:1px solid rgba(0,0,0,.08)}
+.pf-big{width:104px;height:104px;background:#E9643B;flex:none;display:flex;align-items:center;justify-content:center}
+.pf-big .mi{font-size:72px;color:#F7D3C2}
+.pf-head h3{font-size:21px;font-weight:400;margin:4px 0 6px}
+.pf-head .la{color:var(--cyan-d);font-size:13px;margin:0 0 14px}
+.pf-ed{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink);margin:0 0 12px}
+.pf-ed .mi{font-size:18px}
+.pf-sub{font-size:19px;font-weight:400;margin:14px 0 10px}
+.pf-kv{display:flex;gap:80px;font-size:13px;color:var(--soft);margin-bottom:14px}
+.pf-kv b{display:block;font-weight:400;color:var(--ink)}
+.pf-pats h4{font-size:19px;font-weight:400;margin:18px 0 12px}
+.pf-pats .row{display:flex;flex-wrap:wrap;gap:12px}
+.pf-pats i{width:38px;height:38px;border-radius:50%;display:inline-block}
+.pf-box{border:1px solid rgba(0,0,0,.6);border-radius:3px;padding:14px 16px;margin-bottom:16px}
+.pf-box h4{margin:0 0 10px;font-size:19px;font-weight:500;color:var(--cyan-d)}
+.pf-box.perm h4{color:var(--ink);font-weight:400}
+.pf-box small{display:block;font-size:12.5px;color:var(--soft);margin-top:8px}
+.pf-box .v{font-size:14.5px;color:var(--ink)}
+.pf-pr{display:flex;align-items:center;gap:6px;font-size:14.5px;margin-top:10px}
+.pf-pr .mi{font-size:18px;color:var(--ink2)}
+.pf-pr .q{font-size:17px;color:var(--ink2)}
+.pf-tg{display:flex;align-items:center;gap:8px;margin:4px 0 0}
+.pf-tip{position:relative;margin-top:12px;background:#2F3B41;color:#fff;border-radius:4px;padding:10px 12px;font-size:13px;line-height:1.45}
+.pf-tip:before{content:"";position:absolute;top:-6px;left:150px;border:6px solid transparent;border-top:0;border-bottom-color:#2F3B41}
+.pf-tip b{font-weight:600}
+.pf-nl{display:flex;align-items:center;gap:8px;font-size:14.5px;color:var(--ink)}
+.pf-nl i{width:16px;height:16px;border:2px solid rgba(0,0,0,.54);border-radius:2px}
+.fl-wrap{display:grid;gap:22px}
+.fl{background:#fff;border-radius:8px;box-shadow:0 0 4px rgba(0,0,0,.1);padding:22px 24px}
+.fl h3{margin:0 0 4px;font-size:22px;font-weight:500;color:var(--ink);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fl .lead{margin:0 0 18px;color:var(--soft);font-size:15px;max-width:900px}
+.fl-tag{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:12px}
+.fl-tag.todo{background:#FFF1DA;color:#8A5200}.fl-tag.pend{background:#FDE7EA;color:#B0303E}
+.fl-steps{display:flex;align-items:stretch;gap:0;overflow-x:auto}
+.fl-st{flex:1;min-width:210px;border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:#FAFCFD}
+.fl-st .who{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--ink2);border-radius:10px;padding:2px 9px;margin-bottom:8px}
+.fl-st .who.mk{background:#8E44AD}.fl-st .who.op{background:#E67E22}.fl-st .who.pr{background:#009ABA}.fl-st .who.ve{background:#2E7D32}.fl-st .who.dv{background:#455A64}
+.fl-st b{display:block;font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.fl-st p{margin:0;font-size:14px;color:var(--soft);line-height:1.45}
+.fl-st .st{display:block;margin-top:8px;font-size:12.5px;font-weight:600}
+.fl-st .st.ok{color:#2E7D32}.fl-st .st.no{color:#B26A00}
+.fl-ar{flex:none;width:34px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:22px}
+.fl-notes{margin:16px 0 0;padding:0 0 0 18px;font-size:14.5px;color:var(--ink);display:grid;gap:6px}
+.fl-notes b{font-weight:600}
+.nm-q{font-size:15px;margin:18px 0 8px}
+.faq{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 10px 0}
+.fq{border:1px solid var(--line);border-radius:4px;padding:14px 16px;background:var(--white)}
+.fq b{display:block;font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.fq p{margin:0;font-size:14px;color:var(--soft)}
+.ctitle.l{text-align:left;margin:4px 10px 4px;font-size:24px}
+.ctitle+.dl{margin:0 10px;font-size:15px;color:var(--soft)}
+.ph{background:rgba(92,59,158,.10);color:#4B2E85;border-bottom:1px dashed rgba(92,59,158,.5);padding:0 4px;border-radius:2px;font-weight:600;white-space:nowrap;font-size:inherit}
+.kpi .big .ph{font-size:30px}
+.exv{border-bottom:1px dotted rgba(69,90,100,.45);white-space:nowrap}
+.tip{position:relative;display:inline-flex;vertical-align:middle;margin-left:4px;cursor:help;outline:none}
+.tip .mi{font-size:20px;color:var(--cyan-d)}
+.tip .bub{position:absolute;bottom:130%;left:50%;transform:translateX(-50%);width:300px;background:#2F3B41;color:#fff;font-size:13.5px;line-height:1.45;font-weight:400;text-align:left;padding:10px 12px;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.25);display:none;z-index:5}
+.tip:hover .bub,.tip:focus .bub{display:block}
+.dleg i.dash{width:16px;height:0;border-top:1.5px dashed var(--faint);border-radius:0;vertical-align:3px}
+@media (max-width:700px){.ptabs .pt-c{display:none}.util{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="ctl" id="ctl">
+ <header class="ptitle"><b>NUP2GO en la app V2</b><span>Iteración tras la reunión con cliente del 21/10 · la plataforma solo distingue Stripe (automático) y manual</span></header>
+ <div class="ptabs seg" data-k="chan" role="tablist">
+   <button data-v="stripe" aria-pressed="true" role="tab"><span class="pt-l">Stripe · automático</span><span class="pt-c">Autónomos y mid-market por Stripe · el exceso se cobra solo</span></button>
+   <button data-v="manual" aria-pressed="false" role="tab"><span class="pt-l">Manual</span><span class="pt-c">Enterprise y mid-market manual · sin cobro automático</span></button>
+ </div>
+ <div class="ppanel">
+  <div class="prow">
+   <div class="grp" id="g-plan"><span>Plan</span><div class="seg" data-k="plan">
+     <button data-v="mon" aria-pressed="true">Mensual</button>
+     <button data-v="ann" aria-pressed="false">Anual / mid-market</button>
+   </div></div>
+   <div class="grp" id="g-mmod" hidden><span>Saldo</span><div class="seg" data-k="mmod">
+     <button data-v="full" aria-pressed="true">Saldo completo</button>
+     <button data-v="rec" aria-pressed="false">Recarga mensual · en validación</button>
+   </div><em class="chint" role="note"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#FFB74D" d="M12 5.99 19.53 19H4.47L12 5.99M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"/></svg>Funciona igual para enterprise y mid-market</em></div>
+   <div class="grp util"><span>Importes</span><div class="seg" data-k="ex">
+     <button data-v="0" aria-pressed="false">Sin decidir</button>
+     <button data-v="1" aria-pressed="true">Ejemplo</button>
+   </div></div>
+   <div class="grp util2"><span>Notas</span><div class="seg" data-k="notes">
+     <button data-v="0" aria-pressed="true">Ocultas</button>
+     <button data-v="1" aria-pressed="false">Visibles</button>
+   </div></div>
+  </div>
+  <nav class="pnav seg" data-k="screen" aria-label="Pantallas">
+    <span class="subwrap" data-scr="page"><button class="scr" data-v="page" aria-pressed="true">Página NeuronUP2GO</button><span class="seg chips" data-k="exc" aria-label="Consumo">
+      <button data-v="no" aria-pressed="true">Sin exceso</button><button data-v="si" aria-pressed="false">Con exceso</button>
+    </span></span>
+    <span class="subwrap" data-scr="inv"><button class="scr" data-v="inv" aria-pressed="false">Facturas › NeuronUP2GO</button><span class="seg chips" data-k="exc" aria-label="Consumo">
+      <button data-v="no" aria-pressed="true">Sin exceso</button><button data-v="si" aria-pressed="false">Con exceso</button>
+    </span></span>
+    <span class="subwrap" data-scr="sub"><button class="scr" data-v="sub" aria-pressed="false">Suscripción</button><span class="seg chips" data-k="sub" aria-label="Estado del addon">
+      <button data-v="on" aria-pressed="true">Activo</button><button data-v="off" aria-pressed="false">Desactivado</button><button data-v="due" aria-pressed="false">Impago</button>
+    </span></span>
+    <span class="subwrap" data-scr="prof"><button class="scr" data-v="prof" aria-pressed="false">Administración › Profesionales</button><span class="seg chips" data-k="perm" aria-label="Permiso">
+      <button data-v="si" aria-pressed="true">Con permiso</button><button data-v="no" aria-pressed="false">Sin permiso</button>
+    </span></span>
+    <span class="subwrap" data-scr="modals"><button class="scr" data-v="modals" aria-pressed="false">Modals</button><span class="seg chips" data-k="fu" aria-label="Modal">
+      <button data-v="aviso" aria-pressed="true">Primera vez que un profesional utiliza el nuevo modelo</button><button data-v="perm" aria-pressed="false">Sin permiso</button><button data-v="noadd" aria-pressed="false">Sin NeuronUP2GO</button><button data-v="dia" aria-pressed="false">Día a día</button><button data-v="rec" aria-pressed="false">Día a día · recordatorio</button><button data-v="prog" aria-pressed="false">Programas</button>
+    </span></span>
+    <span class="subwrap" data-scr="flows"><button class="scr" data-v="flows" aria-pressed="false">Flujos</button><span class="seg chips" data-k="flow" aria-label="Flujo">
+      <button data-v="tar" aria-pressed="true">Tabla de tarifas</button><button data-v="mail" aria-pressed="false">Correo de saldo agotado</button>
+    </span></span>
+  </nav>
+ </div>
+</div>
+
+<div class="stage">
+  <div class="notes" id="notes"></div>
+  <div class="scroller"><div class="app" id="app"></div></div>
+</div>
+
+<script>
+(function(){
+var IMG = {act:'data:image/png;base64,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', test:'data:image/png;base64,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', extra:'data:image/png;base64,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', stats:'data:image/png;base64,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', n2g:'data:image/png;base64,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', people:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASYAAAEmCAIAAABApqqNAAAscElEQVR4nO2da5ejOJKG0QWBwXbamVlV3TOze2bOnv3/v2h2tnvO9qXybmzuSPshMimnDZiLEALzfKhTlZU2AvQqQqFQCAkhjJmZGVXgoRswFeaBa6YeekvutB9r3K/R0A2YDhq/5U683xeaHctGiD7FJYqAn5/8eQ5C6PzPc3pr+8SR+N5nybWk4zvgnAshjv9U8yJAeBjj4z8VXHcmZ5acCkBXAPx96BZ9ItceMEFj2Ktz0pBZcn3BPzN0cxqAP9Phm4RhIJ16uxbMkpMJqCvLMrBmQzdHAmD9CCGd5VdA72rUUu6z5CSQfTDth4kQIh8M3ZYRcx2S62G0E0LkSpP81WMg194EJ349cx2Sk8eVK+2cWXtNmSVXlyzL0jSdlVYGIYRSOvucxiWnapbcBTjnoLT5QdUB5nuU0nm5rwxVktMydlRNmqZpmraI74/wXuWDMaaUUkqHboh2zFbuFCEEiE3hk5msSBFCILx5ppczS+4H4EOmaTp0QyYICG/2No1ZcsAcGlHDHGIxZsnNYlPPlQvveiU3i21YrlZ41yg5znmSJLPYdIAQYprmVc3xrktyQogkSeYAiQIaBWEppaZpXklU84oklyRJkiSKLwobC4yjPdpXNaI3wjRN0zSHbkXvXIXk0jRNkmSQO02SJIqiJElgC4xhGLBIle+IMT62/BgfG9XUN1IfEEKmaU57AX3K92ZoMG0DmZ20ARapGGOmaRJCsiyL45hzDv5VLsUrRAgRx3GWZROe4E3Zyg3iSZ7DOfd93/f9832rlFLbtm3bzrLM9/04jimlrusyxq4wlHfCVP3M3iU3SC5TlmVJkiguf1Bxp0KIKIr2+31hHhml1HEchJDv+0mSIIQYY+v1Ot8RAzdyhSW6MMZg9oduiEymZ+VEHNeISSofCSBY6vt+EATn/4sQsm3bNE3f96HxCKHtdssYQwiB54kxtixLaaOVUvpKwAmfTB7qpCSn2Ljli+l5FQZIiS77fZiclCVMQwYwISSKIvgFQsh6vbYsCyG02+0Mw1gul1Od4VQzJXOnl+S6jGRqZm5xHMPKHuzrycu55o+x4nmCW1j9C1DTLtctpXS9XjPGDodDkiSLxcK2bZn3MyqmMbvrJ2LZVjrt9MY5h4hfq0/X+v4kSUBsXWpRXhzdoMrD8YQtTdPD4QCzuDRNoyhijF2noTM+Ar9jfwJ6WbkWpGkax3Ef3wwCiOM4jmOwaYMsNiCEILgSRZFhGMvl8poNHcAYG+/anRbtbu1Pghgkt8YwDMMAswbfP2wVBoh2Qj4UGDqY3Q3VHh0Ap4YxNnRD2qCF5Fp0n27OZJXGOedRFEVRBGuyrb5fMnnEJS/EMt4xXhbgd/TrZObdRGq0dJSOZZZl4GW1p+QhQn5WEATa1heCtXLHcYZuiC5YljWuSOb4Bks5kckzvcG62eFwyGP0egKxnM8/m8ySVRvA6x5RJPOS5DR7mz1N3sBN9TxP/3094FsKIY6mczq9oSGAnPWxTO0+S+5cYNq8zTzhteC/ujUT3FTP88ZyPg4sUYzLm+obGIYgWWfotlzg89RT19ZCSKMsmNHxaMUwDHe73Vj0ZnysXgzdCu2AoVP/9ziCJcX+HiXE3w+Hg86Tt3Ng2jl0K3SkemjWBN0lB3rrSRKgN83f0EwjYBjV+Z1qLTlY+e3py+M4DoJA/3jJTAuiKNL2zeoruf4yuYwP4xnHcXf7Ocj8V0aQYEy+dAv6y0zqiKbrcn1vC4jjWNb8UH3P5ZwHQcA5h/WotukXusbK5AFDar0lO3WrYUNKruwu+9YbmLhEyyGwDvl6CRSBZIyNPbm+P6Aj1VCdugGoj4SvygHj0miiYNub7/uHw0FPr6MFpmlCAZU58bIMrdJT+nhJlZLqS291HQMwcTpHtJoCu8g4547jzKorpLatU4FG3ghUm2z76bqOAcyqx7UQdxGY3eV1U2bO0adKty6S6zU+maP/ok1rII0mDMOJjSYS0SSGqYXkYPO1ggvlOcEKrqWefOVj6Iboiw57IIeXnITNb7UZRQ5eF2C/39Ct0JrB3ZyBJQe7ZpRdrteqRDoA6ZdzBmY1w3aDISUH60sq3byhDgOpjYTVoaI9rB3Q+Wm1pYeO1+CrhpSc4sFmDLM4Cc2TLLmJ5qjIdq8aPKbBJKd+Iqu9iZMDFP+btv8sBWVBuxOGkVyLRZKOWoFJzjVIzjg6R3Kmmm5LwS0ZQHJwckDTT3V3cHRYk1FD9dEIM8eoP35QteRg367iiwLS6+S12EGjZmYEy49KLvWZcfoQodqlI9WSG2qhVq6vRQixLKvFxpk6fbL7XrjBrNw4Yy1IbbdUI7n3njbUeojE+jwgtuVyuVqtbHtRKLkuHY8QAgfNdREeSO5KJq5SULk+rCbxHBmGAQdEKblcAd2ljjGG407X6zVC6O3tzfeLdwC17umU0uVyud1ufd/f7XYwzWitnDRNNcmdHwVpmsIr7vtCivZ6KBxFCnbxdFz6hMMWl8vlzc0NISRN07e3N8/z5E674RK3t7cIoeVyuVwuPc97e3tr1/LjI+9magJH1fa92VeR5BT6ypLnExhjx3E2mw0cGsw5//79+8WEfYzxiV3NT/outLeMsc1ms1qtjn+4Wq0Wi8Xz8/PhcGhqpWGUGUsBY32I47jrWWKXdm6qkJzKw4Qr2tDiU5Zlrdfr5XKJEBJCBEHw+PhYPU2ilC4WC9Bk/msYY0JIWQjHcZybm5vFYlH4bff394wx8DNb3IJuJe41B3J3Ojnkl55275Jrtwo3OAgh13VXq5Vt23Cwm+d5+/2+7F4wxrZtu66bZRmcbQB6QwhBYLNw3KGUrlYr13UrKntjjMH6eZ5X31n4EbSc9daQJElgiOzp+6VKrmhA1UFvTSc20MuXyyVjTAjh+77neYWbPuDYeNu2wUb5vh+GYa43y7IopbD79qQNMGFzXRfOaqqOTxJCVqsVQmi32zVSXf1bnjkmSRJ1kuvkhpx9Up/NMvVDHYSQm5sb13UJIVDOOQzDkxgG2C7LsizLAgMFB2WFYQgXgv+FJekT+4YQsm17uVzmn63ZKjChQJNbv0Y6etMQ7etpJnwqOYluSJZl+qQd1VQ+xhj0lmXZfr8HseVdnBBCKYUidqZpUkoJISC2IAjA/ti2zRjjnMOs4HjihzG2LGuxWFiWZdt208gYHOYILm6jD36ml7mdbhNGKemBhJA+bF21Y9npSergUjYC5m/UpGCvwJPEGMNh8JRSkBnozTCMOI73+/2x2CilICQo7Z6LjVJqfdBCbDmMMdd1a1ZbKBllepGGVnqTRU/uZbXkOulNE5eyPhDH33v7JEkQQowxMGtQnhVUZ3zE3+F8YxhWQGzgIkZRFIYh3DvM9MDJtG3bsqyOyVwIIcuyVqvV8/Pzp6kaOl2Anw/E6o6E6GURvUQsJe+SVAIhhDEG0arlcpkr7XicA1c5SRJwOGFWBu4l59z3/SAIhBCgNLCH4ElKzGmARQjLssIw/PFTLQIlunmXR7RtGhg6uYvjnbpCRYXzxp8ZFEIIxA9N0zyPH8KppbCjEZw6xthqtQIhhWEIOSKQpAJ6cxzn2PTJxTTN9Xqt35nm+r3XnA5NS5IEsiBk0UlyZ4lVhoGMNE2rXBr93guEH7fbbZnjnmUZTNggJ4tSCvUwPc+DECV8A0y0FotF30cKY4wXi4VpmhUzOtB/r824EsC1kemnyPoiw3iX0+hcSliPrtAJ/AIsrMVx/Pr6CgdBQmQF0rK6z9MagTHebDYPDw8Vhk7/U7N1osr7SpJEV8mNs74IIcRxnIpfgG21YRhCdN6yrJubm+OZnvrOjTF2Xffp6WmOkUii6g1CFQ9ZcRSZkhvjGdawH6dwDIMgUL5UAPlcGGN0hPoG58CSxn6/H11k+BQtp/cngKGT8sZlSm50ejMMg1JaljkOMzSYuYHAukWuJPcshNB6vfZ9v1ByCKG+p5TS0F5vQJIkUvJRpElusHobHcjztsr+V6odk9+zYLWwbBvrfMijXCCI0v2pSnsrmpu4QvHA0tl4uyasjBfeWmebPFOAlE4u563on2tb2P8gD0t9YyRSkT42GsdyPEjp53Ikp7lLWTaxASunvj0SKZEcqjWXG1loWQu6d/U2kjt5U/qbuEKgtszYTQHcwplvKWpJbiRxC63o3tvbSO7kTWlu4oDz/penKY+d8wp8oLfRLIWPzdh27PBdHUutTdzRuzz3vmCXgNL29MN5GG1k2V4jGRlyOvZ5bBidhhmtTdzRuzyP+Pe0AVE95wZtTIty46RLt8eG0X6YGcsJL7D57eSHk5HcuZWD3QxDtWcwFDqoXY4T6+R+aG3iDMP4iJFAltbJf03GsTy3clCyYYz5rp1Q66Cmadou3N2+z+l/ohL4V9AjT9bfFBTlHQo4NYEQoniaHccxzzLj4/DAMrVT06SUYoQMhEYdwYL68y1iVO1vWHO9GR8ZGPBQoDJh3mbpW331Aba3w196klyapnEUgbTiJEniWHDOhYA6foLz6i1FCCHIBoK8VWgwpLNanY9AUUm7Ux9GIbmWCcEnIRPTNPN0xAlbOUipkb7RIUmSOI6jMIyiKE0SmMzkdPFgEcYEv0MIwYQwxizbhuPEdJ5vn0iuZjdtKTm1ZynJ6TqMsbx4wVQlB3NXWbET2I0VhmEUhnEcp2maJkmapnK3CwnO089fSCg14TZMkzFmLxZdyqL1B8ytct+4ZjdtL7mjK2u6tHJSIPm4Tqu+rku3h5mbuI6tyLIsCkMQG5R7UTktzNI0S1MjDBFC9Kg+Gpg+Zc2oQ4saDW0kB77Ej3/r2nuNoyLhJ+sE+s7luj1MqNZudDjsCuZpQRD4hwMUe+/UoG4IIZI4TuLYPxzA3DmOYy8W9atc9w1ooVFfaiM5Ga9BhWU86XNwHAeM1pNZlDsGarHkXmVT9y9N0ySOgyDYe14QBFptNuech2EYhuHe85arlbtcdj9rVhZNVwvaSE6Gj6HoSR2rjhBimibMQgcvo9AHUDYzv6/6mgFjst/vd7td9FH3Vk/SNH19efF2u/XNzXK1sm27j2zSRgahqRwaS67LUbqKgfqTxz+xLAtqmUjZ3qsbUIAd/l7fscyyLIqi56enw3jKqGRZ9vL8fNjvb7bb1WoF/ovE72+kYCiMXd9paiw5/ZfjjgHV5e/DsiyM8SStHKxu5VP5OpITQvAse319fXx4GIvYjonj+PHhIfD97Xbrui4abgyFM0Nq/nIzyelQ6b7pLPC444HkJpPqdQzUh4a/19RbHMd//P677/vGSNyWcwTne8+Lo+hms7m9uxvKcwHXr+Yg3qznDa43o7nR5zwj5P1NQAx91HlG58AIAvWb4ScXR0bO+WG/f/j+PY7j8eotJ0mSl5eXNElu7++H2uYPs5U6v4kaTcwKTxLVHMg5zP+ZpulxItgEAIEdL+7DiYRlvmKWZXvPe3x8TD6fUzl2CCELx/n2009NVSclen7SzSpoYIh18CpbcOJllVQuGDH58SP5T87jRjlxHL++vDw9PcXT0pthGFmW+YfDn3/80fTWpHSF+mHFBpIbo96Myv43SSomcmmaervd68tLFEUD+ZMNu3fDX+ec+4fD9z//HORYopoCmb7kjOaLwiOhuEuVDTFZlnm7HZzL1VRv8pyChjJorhrO+d7znh4fozBUrLpZcu9M18oVy6Dwfjnnnue9vr5GUdTiSuNyQYUQ3m738vKi2HmWLLlR6K3s6bZOOBwjhZLzD4fXl5cwDIezb0oRQuze3rzdTvEych2ZTEpyZb1jpIGfFhTqLY7jl5eXqLnejLHZt2M456+vr4f9XukeiGuTXBkguaLeM9b+VMbpJo+P3Cjd0pTVkMTx29tb4PvKBg5pkuu47VcHSiQ3Sq+pDDBxx7cphNjv97u3t2xUaXoS8Q+H3W4Xt5rBtqBO4KCu5GS05xTFIv60k33cA0gx5zURsiz7/uefHeYzUxiS9p632+2UGXk5kuvBqxSG8veZpimoTgjR47UHEjOc73f8pjjnz09P3ezbFEYmWCL3Dwdll6v+hVpZYZxz6WeASvyu+oDqICmxrxTYencm8XFmWQb1SE5cyjAMX56fm84I0DR09pkgCDzPWziOgn3JEqzc+7ucgovxvlqgw9RU4uMsvKM0TZ+fnlp4U7Kei1b9RQgR+L6326m5VvVjryU5ee3RgsH1JpfChe8wCJS5UoXo9ojjON57XhzHCq41S+4UTQydFMQHxz9M09TzvFGv60hHCBFG0d7zFFxrllwB09CbUZRYA5V5Dvv9UE2SDqXUcV17sej4PWmaHg4HBf25k+SmmqA4mfsqmMUlib/fj6teRgUYY8d1v3z9ut1uO36V4DyOIv9w6NvtrfahLkhuGv3ynGaOpcYW8eQFCSGiOD4MOouTCELItu3tdnu73d7c3HTf8Z2m6dvrqwIXp0I4Vyq5ZonOWkXfjjiflGZZFoahmiCBAphlbW9vbzYbTAizrE1nQ8c594Og3vPppMtZcgWcpyMqp+tge26roygKfL/j12oCs6z7L1/u7u+hpgshZH1z0301VXDu7XY1BtxOA217yU0mzPAZYQwynTt9lhJODjh5QXEch0Eg+TJDYJrm12/f7j/0ZhgGxth13YXjdNxPBHtY++7YfczlRi1FZBRlJCq5rExOlgHgOIHztYHRvSpCyM9/+cvd3d1JzSyM8ZcvXzpKDvJywp73jLe0cpVGYIxD5ymj3rp6buLgoJyh2iMLy7b//o9/3N7enteowxhvi37eAq//ROey76+S3Hi7Y0045yNdLxZFp0bHUdSuzoImIIRuNpu///3vq/WaUFponuF3OqZKQv5X3r176uWfUl6Pft7ayk2Bi2ko2g455xPRNE0VnwInF9M0//LXv/7tb39zXPdDUQWeFEJos912z06Gs2Dh1ffksB2/oONLVNnosVi5Lln5sGG8zFfR03su3OSeJEny0YfGBTXparW+vb11l8s657+6rmtZVpKmoq5JKNgdwTkPo8hkrL+9BWXvokpyY7FyXYQBvuW4ismWeZVpkgzSntZQSheOs16vV+u1UzsUSQhZrtdhGCZ1+2dx1w+DwP1hUeVTJp8pWLmOgJM2lhMey+q4xEkyoiQvENtyuVwulwvHaXq4+Xq1en1+TroNMWHjejDN3Kk2Vu5KJAf7qYc6paCpV1wY8uGcJyOZyJmmaS8WruuuVivHdduFHxeOYzLWMdAPU19R+8Scpu5UY8ldid4AWKMbxNA1P0ioIGkmjuNPlV30A85qtyzLXS7BjezytAkhjuMEvt/F0GVZliSJbdv9DbWFep4l906jgzCHomxVo3AFXAcQQnBetGVZq/V6s9mYjEnp4qvVytvtOvqWYOj6O5VuCMm1CSZKrrJyDSSfCw0NDhwnBmJbLpfrzWa9Xsu9hOM4pmki1Oy0thPiKOo1RljYtkuSa9j/T3+9jXZmvTUmS1Oj3/By3SpECCGEMWNstVptNpvWs7WLUNO0F4v94dAlTtv3eYmtJNfv4UQzcoiiKOk3XFlLb6ZprtbrzXa7XC4ppX2HoxaOwxjrIrmk/OBLKbSS3Iz2DBs4gbgIzNOgah14lQou7TgOY6xLVSXOOW8WtGzGLLlpkjXIw5CJydh6vYa1NUII6a80aAmWZTHGOk7n0iThWUb68X6bSa7G981+ZF16fVRJkqjMEyKEOK67Xq9d12WMEUp7mq1dBMo0MMvqsn8i45wLoTJU3cHKzXqrTa+PKs0yrsQlgVU1yBexLEvBbO1yk2zbYqyL5KDQtcQmHSPbys3oQZokfTuWUARhvV47jmPZtj4LmOBbdvmGLMsU5xLrM5eb/dQ2COg0vb0shLHrujfr9frmxl4sFM/WLmKaZsfVuSzLzgcsWX2xhZVTKYMx6m34YQK9H9IiX3IIIUrpar2+vb1d39wM7kMWgjGmpkkpbZ2GUjhg9Xqr1VZOx6esE9KfT5tnfrKxQMrRORhjy7JuNpsvX792rx5ZSdduxizLsqzWkhMVe5Q7K2Cey/WLjCGqzReknyOWUvTmOM7d/f3t3V3/nmTXZ8YYY5ZltC0IX+hYvtOPxZklV0UjFU3DJUAIOa779evX7e3t0G2pBaW0cLtdzQme+vCJXrNh3ZiMit7/UuNXXdf99u3bWPRmGAbsCTr/OaWUEII0i/cYs+TGTpZlF0fyfD528TeXrvvTzz/fbDYymqYOQun5hNM0zf/67//+xz/+4S6Xg7SqjNmxVEYv4agkjqsX5b5++/b12zfO+evLS3WlBtu2v377tlqv9QxOVkAwptQ8OWkAIUQwdjcbiOjqczTKbOWUoS5x9sclEbr/8oUxdjEKgjEGvem28lYHQqnJiqunYIxvNpvlalXx8VTtbsPxPd+emU4yN8b49u6O1duFfXd3t1qvh8qW7AgtciyP/3e1Wi3L3UvOucq88NJH3DFBe4x83O9E7hpjvN1u61itxWKxvbvref2tR2D7ecUvWLa9cJx9+UJCT6+8cLCbrdxkQQjl59SYplmhvbv7+4V+yVz1uSg5s9IMKqb0KY9uDj1zTu4oUtPERbnICCF7sdh0rvI/LBjj6m0NmJBhyrfNVq6CsQwxCKH6Tc0NV1mNToTQ/f29rKpbA4IwPj8Z69NNaXODs5V7HyNHMcxDqnGLcu6FjiVCyDTN29tbXO/bdJ7jEoxPfEvGWL4O3mCUkkrhZUcZoZJFXvttFHozPkwc0ChTiRZJDmN8c3NDTbOmBdB6DD4ruIJ6Lb/dYZG1KmLZ8itHAlgMcD9GF5uFYSJJkpqvySwqTEII2Wy303jRhBDLto9jkv3eVb1vb2blpvEmygDjNtQ5BLKojkMeU2blVrIruuqDDqcpzZJ7B0zEeGPix9TvWFCBK/dFKaXVORm6Ue3KYYTI5xfKbDt/xUOdUN0sYjlJyYEzSZWXf+uP6td0PNkzP4eICCGu60ptS799uro7YkLY5/0EOnRf+ZIb1wSodbhvvBwP7ScnhmKMLduWerUhn+r52gmzrOP7HaSvyncsR9Rz88mbMa2quNX38klypnkiOVuy5PSCHo2tWZbxIY5J0XwuJ3lvC7Q//xNjPBlnsiZCiCSOc6tumuZxTeLzteN+GjHMwHyyOVWUHBLWN43X5dRGz9u/mfzG8NHSZ+Gfk6WkxlCSJPZiAX9nlpVrDGMMtehUNGwITvZPpFmm/lTnsserj+TqUiinK1JXIUVvSQgRRdHy44yLfB4rhMBnuRoTgzF2nFKTpWmXA3ra0UZyxzHlYTmX1onMZs4RQuw97+7uDv6JEFosFqv1mnNOCSmsFzJeEEImY/myx2q9Pk7jTpIkiiLFTSqbyFywcv00phY/iuR85PLAn5PXWKNClBW/yTn3PO/4F7a3t8vVCs52GkuOW00wxqvVKh9HTlZEoigKgkBxk1pauX4aU8VxwKMwa15DX1cujW4vX+ItFOrJ0XN0uFNy+iZfcT3/r6HWwUdg5Y7jipM3ZbJIkgT6U1mfyrJM06VIVcFMrVJPjFxyhbevxsqBk9NoG9hMzsUKX3EcKwpONkVVi5IkUR87MS5aubLb7y+CAhoDh1vHDjEVkjg2HGfoVgxJmqbqVwiK9PZu1y7YsT7EAEoDZuPWK0II3/fVHPioLXEUnZS4PKGPGulFvfr9Jxcm0xhjWcv26DPwQz1jIVIOrxmKk8a/PD9/+fp1qlGTOgRBEFYes9pHOljFpOyy5GS14ERsOjNevRlnjY/jWJPF1UEQQmRZVm02+oiuVAjnchHfjtcGNxJCkaPQ2/RIrlh1cRyrn8gZXSSHzkpK1Ad9VBaZstjGcFt7z8uG6HY64B8OUaVX2QfVHf6ynNpJLl9km6zYgDH4oK+vr0lNyY3hduojhNgfDtUTuT6olkwvkrsWvY2EIAiiMKzlW07rdSVJEoWh+m07qiWXT94afaox0+ocreGc17FMr6+v6vN6h0UIsXt7i4e46+rOfzl23KjsXD73kxMEqsgJEkPtftQHYRgovpR9Ajw/Pbmuyz7XYpgS0N+Ovao4jh8fHwfJZu5q5Yzahi7PRa7VtFrf2Po/rwFk1DtFFfj9t9+en56yLBNCCM4553ouirYjTdPD4QA3JYRI0/SX//3fwPfrfl7eo7gollorpISQiw7xiJbdrpM0Tf/9668vz8+u6yZJkqbpt59+mkwdy73n/frrr67rLmzbMIzHx0cYXOp8Nk0SifO9i35ELcnVsXKz3vRHCLHf733fF0IQQrzdbhqSy7IsTdM0Sbzdbu958JP6H+dCSMyJk2Pl6kznZsmNAsjGgL/sdrufP8o0jJo0TWHx7Twqqzh3r846dt3UO0JIxSr+9IrVjYlWjx0mPEmSHJ11eCEgpW28KgiC3W5X+F+Ke2Sd6FTdUP5UI1160KEndxjmOOeHT2f5XmiGnnrjnMdRpMkSyCy5sdBeNvmu8BZkWfb09CTTNxnCy0mTJIoiTZJIZUqu4usmMBkYLyfVTRrBOd97nsys3yE6gh8E/uHQ5RuEpPWSmmZJguSMWXWjBYIompiIFgghAt/366+/FSFrv5w6yc16Gy9CiKeHh0Hq9Xfj3SjBLK7jkCErK0C+5OQUP5zlqRNCCM/z4g4TwoF470b7/b6jVymL+mXUmu3PL0tDafDCxvVm9UbWdubXlxdmmnRsJdM55/v9Xn0WZSH1rVGzfP/z75XiVc4ybEcURVJE9/tvv8VDlJ3ryH6/V739tPxh9yW5ngprz85mOzjnsvJxA98f5Dio1gghnh4f95/WFdtzsT7KOyU9tVFx3sa72q65VpRWyC1C/Ocff6jfPd2FvedFYSjrCfBuQctGomgsOU2rbetNz56zhNcRhuFhvx+kqnELhBCPDw+BvDFCdHhHTV2/EslVXv/4ArP86tDTMxJCIMOQomghxMPDw6HbApcyPM/zg0CTtQ3ccKpVIrnKPjL7lpoQx7HEXSdhEOze3tTXw2oK5/zx4SGpLMCsErOhHNqIB0oJwfrj2NZzqhhdkWbppfLeXl8dx2GW1dV56XPTwfPz897z5AZ76oZPzmhxBn3LokCTNHTj0lsfg10URa+vrxIWl/vRmxAijqKHP/+UXg2Wt5VcCyG0VA6lNBnJVHvC9KG63dsbY4xZloaHiWdZ9vDwEMoLVHYEzpFs+qn2pe8maejGRZdtBGXA9oK3tzfdcp2zLPN2uz9+/72Phgmjzc7DdhKYJTdi4jiWIblTL9D3/eenJyiRUv4ppXZGcO77/r9//bW/72/xJIslcOlr2ktueke8Xw+fRVbQR7zd7rf/+7/KZTp1i0NCiCAI/vjtt/7mMmmWNZ0fUkqLg0yXHkynmsqzoRspdcbzw37/6y+/6OBexnH8/PxcVt1kKFp3/k6Sg4N1unzDyNBp2V8IEclxLIvhnHue9z///OewqgvD8Puffz58/z5gG87pcgRA15MDLmpdp17aGS3iZD/gPR9hlWXZ3vP+9c9/DpXxHATBw/fvz09Pfcs+S9O0yT128e8uf7J6VROWAiteiWa9VApaVJdTEyjPsmy32/3yr3/97T//0zTNyiVyyY9lv98/PTy8vb0pOJORc17naAcAjrlvfa3Lkrv4FCml49r30Znh9WZ8FCRWkOMK9VH+/csvf/2P/7Btu/wXG7Xkgj53b29Pj4+e56VpqiiPt/YQ1jGEISH+AaK/MtUNDBR+VZZTDqr7Saa1udDyOIqCIMiyTNk9ciGyLLtovjqaOMMwqBR/4PoM3fBwzusfQiaHk8v1mZOKmucudrygEILXkFz3KD2V4ibNhu6Y5mNYi08IwXmv50CctIkxdnqtPsVOKVW/M/PiDXU3cYYUxxIwTXOWHNC8mzT+hDAMCCr01ylPvtdxHKLQ7FiWVbrW3BNCXIygSMk7lSY5jDGltE5wSXJgS++v6wu1czkDrJxCyWFCkNqz5jnnaZZZ5b9AKW3m65Z0JZnpI6Zp1pGc5Keo99f1S4Me2XXi5biuSitHCMGENLnBrohL6y6NTVxJ22VKDiFkmua8qUcBwjDgOTexA526r8nYafikTxBCWP2JheV3d2lNsgGSkyTB0GmynWnKCPFR+EQRRK2bZxgGY8w0TWUVkHh5ZjPYElkXkp+XbJpm3GddClmTrZFM2koRLQ9AbeNhUkpVTuSAxWJhW9ah/9STd8ofptzduvIlB2t0/UUvZelk3HozjDRJ2pqdZp9CCK3Xa7WrZIZhGMyyTMaQ7KJjZUOt4Lyw0xJC5O6Y+fxdnUb+Hx+WtmBwndHIegijUfikAwg5yyVWXj3xfRFM9nXLvq4sfCK9IMVnyXW6ux8fxhjLiaNMIRopX+eKs70QQrZtq4yd5NellPac2PTp7QghOOfH9tw0TenmXfLX5e+kj7aOE/nCgNQk6V9bCOhtqF2RlmVVJlJ359PbEXDMwwdgOaRfUvJc7vgOTNPU5NB0Y2I+5UeCpYILEUJW67WCCxXCLMuyrI6HpDZAiGPJtdLb5Y7WYyUFmHcq2OxUhynpTQiRZZmCO0IIUUKWy+VQZfAppcyyTGW96EhykOTZ/CsuP6h+i5cwxjjnOtTPmBRCqLFymJDFYjFshRvbslzX9TxPwUwy99gxxoyxnq7S+9Ps2b2cmMNYC2EYCjaSwSxuc3vb61UuYjLmLpdRHMdKJilwxkOvZXN7lxwhpM8ssCnrrXQ4gZPl+pQcQsiy7ZvNZvCazQghe7HYbLdPj499b1XhQmRpappmr+EiFT4DLNPN7mVTyiTFhUjar4PXwnGc7XZrMqZD7h5CyHEc8u3b48ND35M6app9jzKK3HTG2LgO6dQWODz1st7aetyMseVq5bquVms8CCHLsn7++WfP83a7XX8DwWaz6embcxRJDuajveZeXgkwxb+spuZ6wxi7y6XjunquqSKECKXrmxvHdV9fX6MwrF+Ty6g3BN1//arAkVYXjKKUcs41WTMYL0KIrIdw5cJx4GQ5zQ+mhrF7u93GUeTtdvVjBBdvabVer5WsQHaXXAMPZl4zkMJ7oSFJ32ZSulytmGU13vU8HBDhIJSGQRAEQfdx3LKs+y9fpLTtIt0l12xEnCd1HYE8QCk1Twghi8WCWZZt2/B9OgRLagKzO0KIyVgUhmEYth7KEUJfVOnNUOlYAhhjy7L0SQQbHaJGVZyLEEIYY5ZtD5g/KQXIETFNE5Z/4zhuIbwvX76YvS18nzNAYkHPK3UTR3RLPcEYU9O0LMu2LJX9rD9gyzalFByoOI4bRek2263juv0175xhcnlM04QdKINcfbyAiWvnQcFeGMaYvVhYVkUlq1GCEIItrVEU+YdDmqZZll30k5fL5c3NjZoW5gyWPscYg/TcoRowRlqHK8EBWziOZVljiZHU41NdCUhSA3MXBkGaprz8eFTbtu/u71W18wdDZqwyxqIomgOY9am7Dn4ExhghtFytJic2oEBOGGPHcSzLCnw/iqI0y85mv8I02SB6M6AU+yAXBjjnURSNKFA2LGmaBr5fcxoM5dOXy6X1EZC8QrIsC3w/DEMYreCHGGPFIZNjBpacYRhZls0BzJokSeL7fh1vHGO8sG3Hda9WbMekaer7fr46dX9/3/Nm8yqGl5zRSXUj27zTsblxFB0Oh+rfQRhblrVYLDTPI1EMhOsC33ddd+E4A7ZEC8kZhpGm6ZyBWQ3nPI6iikQChJDJmG3bI8ojUYkQQnqFvBYMfPkceBCz6iqoWJFDCDHGTMZAbLNxK6RtbQXZzRi6AT+glAoh5iXyMsrSU6GQODXN6/YkL/jsUo6Gk4JGkjM+NsDPqivkfIWAmial1DwSmybThIEovXeF9m3QCl/tmFVXCOSdgKIg+g+e5HVbtlqo9SeHrvDVjgmrrnXEknPOhQCxYYxNxizL+hBbn4d2jxxN5m/H6Cg54+M4rxFEUxpqqLU94pzD4eCYEMuyPpd8G0xvmmtdQ70Z0gukSwRycIduxSVU+XTgVWKMmWnq81iuRW9S71NfyRmGQSmdXs57C8CrND6qFw/dHD2oHOwkF8aTOrBqLTnDMAghR5OW6+HTuArp8JgQPJZgiYI2llsePcsl5eiSfVIN57zdht9pkGVZmiQYYzay0Ud1Oh5sV9VZb8ZYJGcYhhAijuNh9tcNncj5fu6H1BOrpwecTaXfkHTae0YjOSCO46vdSw4rBEO3QgJ9jGBQ3UP2t/bCyCRnGEaSJJNcsqtmMnrrAzhsteo3hvZTjhmf5Izr22LXRm86dbJe6fvUDumMUnLGlQVUZhNXiK6TtwuMVXLANUztZr0VMqLJ2wnvkpPlhqh3Zya/t3WW3DmjcyaPuWTlxjAlmLCTOYvtBHAmNV95q6amYzkC5U0ykjlL7hjYHDh0K7oy7rncCVmWJUkyGXM36y0H0gDG60weMynJAZOJqcySAyg1TVPTXWYtGK3kKl1d3c1dPT+9H8lpvsftE1MybjmjlVwNRj27m03cNGZu50xZcoZhcM6TJBnjYSPXLDlJYUlNY34TlxyQpmmSJJV3qtfruVq9TdKTPOEqJAeM2s9UzRBDEByGqvqqyrkiyRmGAaVppxHPVIQS7cG07Ups+3VJDhjvBG96QKrkqLNJmiJRcnpNhy6SZRkcbzt0Q64UOJFj2tO2QoaycrrocxaeevoSmy596gLX6FieMwtPDVdr2Y6ZJfcDznmapnNwpQ+gVsJVzdnKmCV3Chy3maap/CczEs9HIgghENuVRCPrMEuuFBCevomaeoMxvlwF6CqZJXcB8DazLJsfVB0QQjBhm33IMmbJnVDq/PUQYlHiaKryZi+GRq7PrS5mllwzoHAyMHRbtIB8MM/WajJLrgZF4/OVa0+K0vSye6paM0tOArn2pv0wYZ5Wfs69XgrSlgEkN+E3wznnnGdZxj/O9R47cE4yIQRjPEdEpDBbub7gn6n3IS2GI/yZoZszNWbJqUAIkWsP/g4/1kFghmFgjMGaAXMgpFdmyQ1Drr38TzUvAmo/5xqDPw191H+BkTSzkllyGiGKgJ+f/HkOmKaTP89Rdi8zZcySm2nEFOzMsKiaHE9M1xO7nQbMeuuKKslN7E1Jvh39FKxfi9qg5V3MIWAd0G9A0q9FbdDyLmbJzcwc07tlnCU3M3NM75axjeS09JBnZsZBG8lp6SHPXBUjHvZnx3JmjDQc9nVS6Cy5mZHRRj46OWaz5GZGhk7yacP/A9sdOGF3OhaeAAAAAElFTkSuQmCC'};
+var LOGO = '<svg viewBox="0 0 300 100" role="img" aria-label="NeuronUP"><g> <g> <g> <path fill="#FFFFFF" d="M37.774,96.469H32.64V70.066c0-5.886-3.855-9.26-10.576-9.26c-8.908,0-16.154,7.873-16.154,17.55v18.113 H2.17V61.193H0.855v-3.737H5.91v8.442c3.668-5.407,9.644-8.824,16.154-8.824c8.695,0,14.314,5.099,14.314,12.993v22.666h1.396 V96.469z"/> </g> <g> <path fill="#FFFFFF" d="M59.979,96.779c-10.926,0-19.815-8.889-19.815-19.815c0-10.969,8.889-19.892,19.815-19.892 c6.528,0,12.703,3.285,16.519,8.788l1.024,1.528l-1.45,0.955c-0.552,0.444-1.178,0.988-1.898,1.614 c-3.918,3.395-9.837,8.526-15.978,8.526H43.973c0.763,8.198,7.65,14.638,16.006,14.638c4.466,0,8.643-1.839,11.763-5.179 l0.933-0.999l3.059,2.305l-1.153,1.235C70.838,94.485,65.517,96.779,59.979,96.779z M44.041,74.746h14.232 c4.736,0,10.081-4.606,13.618-7.654c0.172-0.149,0.342-0.295,0.507-0.438c-3.053-3.684-7.602-5.848-12.42-5.848 C51.849,60.806,45.128,66.811,44.041,74.746z"/> </g> <g> <path fill="#FFFFFF" d="M95.259,96.779c-8.741,0-14.388-5.07-14.388-12.918V61.193h-1.32v-3.737h5.056v26.406 c0,5.798,3.982,9.261,10.652,9.261c8.867,0,16.08-7.874,16.08-17.555V57.456h3.736v35.276h1.39v3.737h-5.127V88.03 C107.709,93.445,101.832,96.779,95.259,96.779z"/> </g> <g> <path fill="#FFFFFF" d="M125.311,96.469h-3.738V61.193h-1.316v-3.737h5.055v9.408c3.684-6.057,9.443-9.79,14.062-9.79h1.907 v5.438h-3.736v-1.437c-5.382,1.507-12.233,9.003-12.233,19.301V96.469z"/> </g> <g> <path fill="#FFFFFF" d="M159.998,96.779c-10.926,0-19.815-8.889-19.815-19.815c0-10.969,8.889-19.892,19.815-19.892 c10.968,0,19.892,8.922,19.892,19.892C179.891,87.89,170.967,96.779,159.998,96.779z M159.998,60.806 c-8.865,0-16.077,7.25-16.077,16.159c0,8.909,7.212,16.158,16.077,16.158c8.909,0,16.156-7.249,16.156-16.158 C176.154,68.055,168.908,60.806,159.998,60.806z"/> </g> <g> <path fill="#FFFFFF" d="M219.9,96.469h-5.13V70.066c0-5.886-3.853-9.26-10.574-9.26c-8.911,0-16.16,7.873-16.16,17.551v18.112 h-3.738V61.193h-1.315v-3.737h5.053v8.442c3.67-5.407,9.646-8.824,16.16-8.824c8.691,0,14.308,5.1,14.308,12.993v22.666h1.396 V96.469z"/> </g> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M252.812,54.295h-0.772v7.126h0.931 c2.981,0,6.215-0.473,6.215-3.642C259.187,54.666,255.704,54.295,252.812,54.295z"/> <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M294.108,78.119c-6.912-3.986-11.059,2.338-20.137-2.897 c-4.747-2.736-8.243-6.835-7.46-12.77c0.319-4.181-0.541-8.442-2.448-12.141c-4.819-9.417-1.446-15.995,1.209-20.593 c5.44-9.436,10.559-7.071,14.727-14.303c2.27-3.936,0.915-8.965-3.016-11.232c-3.936-2.27-8.861-0.968-11.133,2.971 c-4.162,7.228,0.45,10.476-4.992,19.913c-2.649,4.596-6.664,10.58-17.226,11.127c-5.31,0.118-10.487,2.126-14.519,5.736 c-9.082,5.768-8.341-6.178-14.147-9.519c-3.931-2.268-8.965-0.922-11.233,3.015c-2.27,3.936-0.915,8.966,3.02,11.238 c5.799,3.344,16.052-3.12,15.297,7.441c-1.951,9.271,2.127,19.102,10.781,24.094c7.506,4.325,16.467,3.841,23.308-0.494 c5.151-3.622,10.513-2.835,15.26-0.093c9.076,5.229,5.686,11.988,12.599,15.973c4.831,2.784,11.002,1.11,13.784-3.723 C300.573,87.033,298.944,80.908,294.108,78.119z M246.633,64.669c0,4.38-3.192,7.735-8.572,7.735 c-5.369,0-8.569-3.355-8.569-7.735v-12.59h2.916v11.744c0,3.251,1.15,6.257,5.653,6.257c4.508,0,5.658-3.006,5.658-6.257V52.079 h2.914V64.669z M253.715,63.641h-1.676v8.34h-2.92V52.079h3.353c7.206,0,9.441,2.113,9.441,5.752 C261.914,62.032,258.157,63.641,253.715,63.641z"/> </g> </g></svg>';
+var S = {screen:'page', perm:'si', flow:'tar', fu:'aviso', exc:'no', chan:'stripe', plan:'mon', mmod:'full', acct:'mon', sub:'on', notes:'0', ex:'1'};
+/* el tipo de cuenta manda: decide qué pantallas existen */
+var SCREENS = {mon:['modals','page','inv','sub','prof','flows'], ann:['modals','page','inv','sub','prof','flows'], mid:['modals','page','inv','sub','prof','flows'], ent:['modals','page','inv','sub','prof','flows']};
+function mix(o,p){var x={},k;for(k in o)x[k]=o[k];for(k in p)x[k]=p[k];return x;}
+var EXC = {
+ mon:{no:{balance:9, covered:12, billable:0, cost:'0,00 €', costNote:'Los 12 accesos están cubiertos por tu saldo', k1:'Tus meses anteriores y los packs que compres se suman aquí', tileBal:'Mientras te quede, no se factura nada', tip:'Ahora todos los cubre tu saldo, así que es 0 €.', billRows:0},
+      si:{balance:0, covered:8, billable:4, cost:'{{IMPORTE_NUP2GO}}', costNote:'4 accesos que no cubre tu saldo × 9,90 €', k1:'Se agotó el 3 oct: cubrió 8 de los 12 accesos de este ciclo', tileBal:'Se agotó el 3 oct · lo que pase entra en la factura', tip:'En tu caso, 4 accesos.', billRows:2}},
+ ann:{no:{k1:'Meses migrados, packs o el tope de tu tramo × 12 si vienes por cotización', tileBal:'Mientras te quede, no se factura nada', tip:'Ahora todos los cubre tu saldo, así que es 0 €.', billRows:0},
+      si:{balance:0, covered:6, billable:9, cost:'{{IMPORTE_ANUAL}}', costNote:'9 accesos que no cubre tu saldo × 9,90 €', k1:'Se agotó el 14 oct: cubrió 6 de los 15 accesos de este ciclo', tileBal:'Se agotó el 14 oct · lo que pase va en la factura de NeuronUP2GO', tip:'En tu caso, 9 accesos.', billRows:2}},
+ full:{no:{billRows:0},
+      si:{balance:0, consumed:22, patients:20, over:12, billRows:2, k1:'Saldo del año agotado el 18 oct · no se corta nunca', tileBal:'Agotado · el servicio sigue activo',
+          rows:[['Saldo cargado al firmar','180 accesos'],['Consumido hasta hoy','192 accesos'],['Por encima del saldo','12 accesos'],['Estado del servicio','Activo, sin restricciones'],['Próxima revisión','31/12/2026']]}},
+ rec:{no:{billRows:0},
+      si:{balance:0, consumed:19, patients:18, over:4, billRows:2, k1:'Este mes ya se han usado los 15 · se completa el 1 nov', tileBal:'Agotado este mes · el servicio sigue activo',
+          rows:[['Accesos al mes','15'],['Consumidos este mes','19'],['Por encima del saldo','4 accesos'],['Recarga','el día 1, hasta 15 (en validación)'],['Próxima revisión','31/12/2026']]}}
+};
+var BASE = null;
+function syncAcct(){
+  if(!BASE) BASE={mon:A.mon, ann:A.ann, full:MAN.full, rec:MAN.rec};
+  A.mon = mix(BASE.mon, EXC.mon[S.exc]); A.ann = mix(BASE.ann, EXC.ann[S.exc]);
+  S.acct = S.chan==='manual' ? 'ent' : S.plan;
+  A.ent = mix(BASE[S.mmod], EXC[S.mmod][S.exc]);
+}
+var EXV = {PRECIO:'9,90 €', IMPORTE_NUP2GO:'39,60 €', IMPORTE_ANUAL:'89,10 €', IMPORTE:'23,40 €', TRAMO_1:'1 a 5', TRAMO_2:'6 a 15', TRAMO_3:'16 a 30', TRAMO_4:'31 o más', PRECIO_T1:'3,50 €', PRECIO_T2:'3,00 €', PRECIO_T3:'2,60 €', PRECIO_T4:'2,20 €'};
+
+/* ---------- datos de ejemplo por tipo de cuenta ---------- */
+var START = {mon:[2026,8,20], ann:[2026,8,29], mid:[2026,9,1], ent:[2026,9,1]};
+var A = {
+  mon:{label:'Stripe mensual', alta:'día 20', ciclo:'20 sept 2026 – 20 oct 2026', cicloCorto:'20 sept – 20 oct',
+       hadBalance:true, balance:0, consumed:12, patients:11, covered:8, billable:4, cost:'{{IMPORTE_NUP2GO}}', costNote:'4 accesos que no cubre tu saldo × 9,90 €',
+       next:'20 oct 2026', nextNote:'Este importe se añadirá a la factura de tu plan mensual'},
+  ann:{label:'Stripe anual / mid-market', alta:'día 29', ciclo:'29 sept 2026 – 29 oct 2026', cicloCorto:'29 sept – 29 oct',
+       hadBalance:true, balance:31, balanceOf:46, consumed:15, patients:14, covered:15, cost:'0,00 €', costNote:'Los 15 accesos están cubiertos por tu saldo',
+       next:'29 oct 2026', nextNote:'Factura solo de NeuronUP2GO · el plan anual se renueva el 29 sept 2027'},
+  mid:{label:'Mid-market por cotización', alta:'día 1', ciclo:'1 oct 2026 – 1 nov 2026', cicloCorto:'1 oct – 1 nov',
+       hadBalance:true, balance:139, balanceOf:180, consumed:14, patients:13, covered:14, cost:'0,00 €', costNote:'Cubierto por el saldo de tu tramo',
+       next:'1 nov 2026', nextNote:'0 € mientras te quede saldo · si lo superas, se cobra lo que pases'},
+};
+
+var MAN = {
+  full:{label:'Manual · saldo completo', alta:'acuerdo', ciclo:'1 oct 2026 – 31 oct 2026', cicloCorto:'octubre',
+        hadBalance:true, balance:42, consumed:14, patients:13, covered:14, over:0, cost:'Incluido', next:'31 dic 2026',
+        k1:'Cargado al firmar para todo el año · no se corta nunca', tileBal:'Saldo de todo el año · no se corta nunca',
+        SAL:180, rows:[['Saldo cargado al firmar','180 accesos'],['Consumido hasta hoy','138 accesos'],['Estado del servicio','Activo, sin restricciones'],['Próxima revisión','31/12/2026']],
+        cuestaTxt:'NeuronUP2GO está incluido en tu acuerdo. Tienes todo el saldo del año desde el primer día y lo usas como quieras. Si llega a cero no se corta nada ni se cobra automáticamente: lo que se consuma de más se revisa con tu comercial en la renovación.',
+        esqTxt:'Ejemplo con un saldo de 180 accesos para el año (15 al mes × 12). Hay meses con más consumo y meses con menos, y los flojos compensan los fuertes: hasta el mes 11 el saldo lo cubre todo. Si al final se pasa, no se corta nada y los accesos de más se revisan en la renovación.',
+        esq:[['Mes 1',15],['Mes 2',16],['Mes 3',14],['Mes 4',18],['Mes 5',17],['Mes 6',15],['Mes 7',9],['Mes 8',6],['Mes 9',14],['Mes 10',17],['Mes 11',18],['Mes 12',24]]},
+  rec:{label:'Manual · recarga mensual', alta:'acuerdo', ciclo:'1 oct 2026 – 31 oct 2026', cicloCorto:'octubre',
+        hadBalance:true, balance:4, consumed:11, patients:11, covered:11, over:0, cost:'Incluido', next:'31 dic 2026',
+        k1:'Se completa hasta 15 accesos el día 1 de cada mes', tileBal:'Se completa hasta 15 el 1 nov · no se corta nunca',
+        SAL:15, rows:[['Accesos al mes','15'],['Recarga','el día 1, hasta 15 (en validación)'],['Estado del servicio','Activo, sin restricciones'],['Próxima revisión','31/12/2026']],
+        cuestaTxt:'NeuronUP2GO está incluido en tu acuerdo, con 15 accesos al mes. Cada día 1 el saldo se completa hasta 15. Si en un mes se pasa, no se corta nada: lo que se consuma de más se revisa con tu comercial en la renovación.',
+        esqTxt:'Ejemplo con 15 accesos al mes. Cada mes el saldo vuelve a 15: los accesos que no se usan no pasan al mes siguiente. Si un mes se pasa, no se corta nada y los de más se revisan en la renovación.',
+        esq:[['Mes 1',12],['Mes 2',15],['Mes 3',19],['Mes 4',8]]}
+};
+
+/* ---------- piezas de la aplicación ---------- */
+function header(tab){
+  var tabs=['Área de trabajo','Gestión de pacientes','Academy','Administración'];
+  return '<div class="hd"><div class="logo">'+LOGO+'</div><nav>'
+    +tabs.map(function(t){return '<a class="'+(t===tab?'on':'')+'">'+t+'</a>';}).join('')
+    +'</nav><div class="r"><span class="ib"><span class="mi">notifications</span><span class="badge">1</span></span>'
+    +'<span class="ib"><span class="mi">help</span></span><span class="av"><span class="mi">person</span></span></div></div>';
+}
+function sidebar(items,on){
+  return '<aside class="sb"><ul>'+items.map(function(i){return '<li class="'+(i[1]===on?'on':'')+'"><span class="mi">'+i[0]+'</span>'+i[1]+'</li>';}).join('')
+    +'</ul><div class="chat"><span class="mi">chat</span>Escríbenos en el chat</div></aside>';
+}
+var SB_USERS=[['account_circle','Usuarios'],['home','NeuronUP2GO']];
+var SB_ADMIN=[['apartment','Centro / Empresa'],['person','Profesionales'],['shield','Seguridad'],['insights','Estadísticas'],['description','Facturas'],['apps','Suscripción']];
+function frame(tab,sbItems,sbOn,title,right,body){
+  return header(tab)+sidebar(sbItems,sbOn)+'<div class="main"><div class="sub"><h1>'+title+'</h1>'+(right?'<div class="rt">'+right+'</div>':'')+'</div>'+body+'</div>';
+}
+function V(x){return /^\{\{/.test(x)?'<span class="ph">'+x+'</span>':x;}
+function st(kind,txt,ic){return '<span class="st '+kind+'">'+(ic?'<span class="mi">'+ic+'</span>':'')+txt+'</span>';}
+
+/* ---------- pacientes de ejemplo ---------- */
+var ROWS = [
+ ['Elina Maltseva','Laura Pérez','28 sept 2026','28 oct 2026','act',23],
+ ['Ana Silva','Laura Pérez','24 sept 2026','24 oct 2026','act',19],
+ ['Marcos Ruiz','Jorge MC','21 sept 2026','21 oct 2026','act',16],
+ ['Lucía Ferrer','Iria López','8 sept 2026','8 oct 2026','end',0],
+ ['Pablo Ortiz','Jorge MC','2 sept 2026','2 oct 2026','end',0],
+ ['Irene Vidal','Iria López','1 sept 2026','1 oct 2026','end',0]
+];
+function cover(a,i){
+  if(i < (a.billRows||0)) return S.acct==='ent' ? st('s-over','Por encima del saldo','trending_up') : st('s-inv','Entra en factura','receipt_long');
+  return st('s-bal','Cubierto por saldo','savings');
+}
+
+
+/* ---------- esquema de ventanas y ciclos ---------- */
+function diagrama(){
+  var st=START[S.acct], d0=new Date(st[0],st[1],st[2]);
+  var ent = (S.acct==='ent');
+  function addM(d,m){return new Date(d.getFullYear(),d.getMonth()+m,d.getDate());}
+  function addD(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+  function days(a,b){return Math.round((b-a)/864e5);}
+  function f(d){return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2);}
+  var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var c1=d0, c2=addM(d0,1), c3=addM(d0,2), c4=addM(d0,3);
+  var X0=110, DIA=9.4, yC=40, hC=40, yV=134, hV=26;
+  function x(d){return X0+days(d0,d)*DIA;}
+  function ciclo(a,b,activo,cut){
+    var w=(cut?Math.min(days(a,b),24):days(a,b))*DIA;
+    var rot = ent ? MES[a.getMonth()].charAt(0).toUpperCase()+MES[a.getMonth()].slice(1) : 'Ciclo '+f(a)+' – '+f(b);
+    var sub = ent ? 'cuenta para tu saldo' : 'factura del '+f(b);
+    return '<rect x="'+x(a)+'" y="'+yC+'" width="'+(w-4)+'" height="'+hC+'" rx="4" fill="'+(activo?'#E5F6F9':'#F5F7F8')+'" stroke="'+(activo?'#00ABC7':'#DDE3E6')+'" stroke-width="1.5"/>'
+      +'<text x="'+(x(a)+10)+'" y="'+(yC+17)+'" font-size="13" font-weight="600" fill="#3F535C">'+rot+'</text>'
+      +'<text x="'+(x(a)+10)+'" y="'+(yC+32)+'" font-size="11.5" fill="#7A8C94">'+sub+'</text>';
+  }
+  function ventana(a,fila,nombre,col){
+    var b=addD(a,30), y=yV+fila*42;
+    return '<rect x="'+x(a)+'" y="'+y+'" width="'+(30*DIA)+'" height="'+hV+'" rx="13" fill="'+col+'" fill-opacity=".16"/>'
+      +'<rect x="'+x(a)+'" y="'+y+'" width="3" height="'+hV+'" fill="'+col+'"/>'
+      +'<text x="'+(x(a)+12)+'" y="'+(y+17)+'" font-size="12" font-weight="600" fill="#3F535C">'+nombre+' · '+f(a)+' → '+f(b)+'</text>'
+      +'<path d="M'+x(a)+' '+y+' L'+x(a)+' '+(yC+hC+9)+'" stroke="'+col+'" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>'
+      +'<path d="M'+(x(a)-4)+' '+(yC+hC+9)+' L'+x(a)+' '+(yC+hC+2)+' L'+(x(a)+4)+' '+(yC+hC+9)+' Z" fill="'+col+'"/>'
+      +'<text x="'+(x(a)+7)+'" y="'+(yC+hC+21)+'" font-size="11" font-weight="700" fill="'+col+'">1 acceso</text>';
+  }
+  var wA=addD(c1,7), wB=addD(c2,-3), wC=addD(addD(wB,30),5);
+  var W=x(addD(wC,30))+12;
+  var svg='<svg viewBox="0 0 '+Math.round(W)+' 270" width="100%" role="img" aria-label="Arriba los ciclos de facturación; abajo la ventana de 30 días de cada paciente. Cada ventana cuenta un acceso en el ciclo en el que empieza.">'
+    +'<text x="4" y="'+(yC+16)+'" font-size="11" font-weight="700" fill="#8C9DA4">'+(ent?'TU MES':'TU CICLO')+'</text>'
+    +'<text x="4" y="'+(yC+31)+'" font-size="11" font-weight="700" fill="#8C9DA4">'+(ent?'':'DE STRIPE')+'</text>'
+    +'<text x="4" y="'+(yV+16)+'" font-size="11" font-weight="700" fill="#8C9DA4">VENTANAS</text>'
+    +'<text x="4" y="'+(yV+31)+'" font-size="11" font-weight="700" fill="#8C9DA4">DE 30 DÍAS</text>'
+    +ciclo(c1,c2,true)+ciclo(c2,c3,false)+ciclo(c3,c4,false)
+    +ventana(wA,0,'María','#00ABC7')
+    +ventana(wB,1,'Juan','#5C3B9E')
+    +ventana(wC,2,'Juan, de nuevo','#5C3B9E')
+    +'</svg>';
+  var lead = ent
+    ? 'Cada acceso da 30 días desde que el paciente empieza. El mes solo sirve para medir el consumo con el que se revisa tu acuerdo.'
+    : 'La ventana da el acceso: 30 días desde que el paciente empieza. El ciclo en el que empieza decide en qué factura cae. Juan empieza el '+f(wB)+', justo antes del cambio de ciclo: cuenta una vez, en ese ciclo, y sigue trabajando hasta el '+f(addD(wB,30))+' sin volver a contar.';
+  return '<div class="diag"><h4>La ventana del paciente y '+(ent?'tu mes':'tu ciclo de facturación')+'</h4><p class="dl">'+lead+'</p>'
+    +'<div style="overflow-x:auto">'+svg+'</div>'
+    +'<div class="dleg"><span><i style="background:rgba(0,171,199,.4)"></i> La ventana da <b>acceso</b>: 30 días para trabajar en casa</span>'
+    +'<span><i class="dash"></i> Cuenta <b>una sola vez</b>, el día que empieza</span>'
+    +'<span><i style="background:#E5F6F9;border:1px solid #00ABC7"></i> '+(ent?'El mes decide <b>dónde se mide</b> ese acceso':'El ciclo decide <b>en qué factura</b> cae')+'</span>'
+    +'<span>Un tratamiento largo consume <b>varios accesos</b>: uno por cada ventana</span></div></div>';
+}
+
+
+/* ---------- bloques de explicación de la página transicional ---------- */
+function banda(){
+  var t;
+  if(S.acct==='mid') t='<b>Tu tramo incluye un saldo para todo el año.</b> Se ha cargado de una vez al contratar. Mientras te quede no se factura nada; si lo superas, se cobra solo lo que pases.';
+  else t='<b>Tus meses ya son saldo de accesos.</b> Los meses que tenías, asignados o sin asignar, se han convertido en saldo a razón de 1 mes = 1 acceso. Los packs que compres, por ejemplo en Black Friday, se suman a ese mismo saldo. Ningún paciente perdió el acceso.';
+  return '<div class="band"><span class="mi">campaign</span><div><span class="tt">NeuronUP2GO ha cambiado de modelo</span>'+t+'</div><span class="x">Ver qué ha cambiado ↓</span></div>';
+}
+function cuesta(){
+  if(S.acct==='mon' || S.acct==='ann'){
+    return '<div class="box"><h4>Lo que cuesta</h4><p class="dl">Cuando se acaba el saldo, cada acceso consumido se paga a mes vencido'+(S.acct==='mon'?', con la factura de tu plan':', en una factura aparte de tu plan anual')+'. Si un ciclo nadie trabaja en casa, ese ciclo no cuesta nada.</p>'
+      +'<table class="trm"><tr><th>Concepto</th><th></th></tr><tr><td>Precio por acceso</td><td>'+V('{{PRECIO}}')+' sin IVA</td></tr><tr><td>Mientras te quede saldo</td><td>0 €</td></tr><tr><td>Descuentos por volumen</td><td>solo en campañas</td></tr></table></div>';
+  }
+  if(S.acct==='mid') return '<div class="box"><h4>Lo que cuesta</h4><p class="dl">El tramo se paga como se pactó en tu cotización. Lo que pases del saldo se cobra a mes vencido, al precio por acceso.</p>'
+      +'<table class="trm"><tr><th>Concepto</th><th></th></tr><tr><td>Saldo cargado al contratar</td><td>180 accesos</td></tr><tr><td>Tramo</td><td>tope del tramo × 12 meses</td></tr><tr><td>Si lo superas</td><td>se cobra lo que pases</td></tr></table></div>';
+  var m=A.ent;
+  return '<div class="box"><h4>Lo que cuesta</h4><p class="dl">'+m.cuestaTxt+'</p>'
+      +'<table class="trm"><tr><th>Concepto</th><th></th></tr>'+m.rows.map(function(x){return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>';}).join('')+'</table></div>';
+}
+function esquemaSaldo(){
+  var ent=S.acct==='ent', mon=S.acct==='mon';
+  if(mon) return '<div class="box"><h4>Primero se gasta el saldo; después, se factura cada ciclo</h4><p class="dl">Mientras te queda saldo no se factura nada. El ciclo en que se agota solo se factura lo que queda fuera, y a partir de ahí cada ciclo se factura lo consumido. Si un ciclo no hay consumo, no aparece la línea de NeuronUP2GO.</p>'+barras([['Ciclo 1',9],['Ciclo 2',0],['Ciclo 3',7],['Este ciclo',12]],24,false)+'</div>';
+  if(ent) return '<div class="box"><h4>'+(S.mmod==='rec'?'Así funciona la recarga mensual':'Así funciona el saldo del año')+'</h4><p class="dl">'+A.ent.esqTxt+'</p>'+barras(BASE[S.mmod].esq,S.mmod==='rec'?0:180,true,S.mmod==='rec'?15:0)+'</div>';
+  var SAL = S.acct==='ann' ? 31 : 139;
+  return '<div class="box"><h4>Primero se gasta el saldo</h4><p class="dl">'+(ent?'':'Tu saldo es una sola cifra: suma tus meses anteriores y los packs que compres. Cubre los primeros ciclos enteros; el ciclo en que se agota solo se factura la parte que queda fuera, y a partir de ahí se factura con normalidad.')+'</p>'
+    +barras([['C1',12],['C2',14],['C3',16],['C4',15],['C5',13]],SAL,ent)+'</div>';
+}
+function barras(M,SAL,ent,LIM){
+  var X0=10,W=74,G=12,H=110,Y0=20,MAX=Math.max(18,Math.max.apply(null,M.map(function(m){return m[1];}))+2),acum=0,W=M.length>6?52:74,G=M.length>6?8:12,svg='<svg viewBox="0 0 '+(X0+M.length*(W+G))+' 190" width="100%" role="img" aria-label="Consumo por ciclo y qué parte cubre el saldo">';
+  M.forEach(function(m,i){
+    var x=X0+i*(W+G), n=m[1], cub=LIM?Math.min(n,LIM):Math.max(0,Math.min(n,SAL-acum)), fac=n-cub; acum+=n;
+    var hT=Math.round(H*n/MAX), yT=Y0+H-hT, hC=n?Math.round(hT*cub/n):0;
+    if(n===0) svg+='<rect x="'+x+'" y="'+(Y0+H-2)+'" width="'+W+'" height="2" fill="#DDE3E6"/>';
+    if(cub) svg+='<rect x="'+x+'" y="'+(Y0+H-hC)+'" width="'+W+'" height="'+hC+'" rx="3" fill="#C9D6DB"/>';
+    if(fac) svg+='<rect x="'+x+'" y="'+yT+'" width="'+W+'" height="'+(hT-hC)+'" rx="3" fill="'+(ent?'#FF9C00':'#00ABC7')+'" fill-opacity=".75"/>';
+    svg+='<text x="'+(x+W/2)+'" y="'+(yT-6)+'" text-anchor="middle" font-size="12" font-weight="600" fill="#3F535C">'+n+'</text>';
+    svg+='<text x="'+(x+W/2)+'" y="'+(Y0+H+18)+'" text-anchor="middle" font-size="12" fill="#5E727B">'+m[0]+'</text>';
+    svg+='<text x="'+(x+W/2)+'" y="'+(Y0+H+36)+'" text-anchor="middle" font-size="11.5" font-weight="600" fill="'+(fac?(ent?'#A86200':'#007F95'):'#2E7D32')+'">'+(n===0?'sin línea':fac?(ent?fac+' de más':'factura '+fac):(ent?'cubierto':'0 €'))+'</text>';
+  });
+  svg+='</svg>';
+  if(LIM) SAL=LIM;
+  var leg = SAL? '<div class="dleg"><span><i style="background:#C9D6DB"></i>Cubierto por el saldo</span><span><i style="background:'+(ent?'#FF9C00':'#00ABC7')+';opacity:.75"></i>'+(ent?'Por encima del saldo · se revisa en la renovación':'Fuera del saldo · entra en la factura del ciclo')+'</span><span>'+(LIM?'Ejemplo: '+LIM+' accesos al mes':'Saldo de ejemplo: '+SAL+' accesos')+'</span></div>'
+    : '<div class="dleg"><span><i style="background:#00ABC7;opacity:.75"></i>Accesos facturados en el ciclo</span></div>';
+  return svg+leg;
+}
+function faq(){
+  var it=[
+    ['Asignar no cuesta nada','Asignar una sesión para casa no cuesta nada. Solo se consume un acceso cuando el paciente la empieza.'],
+    ['Abrir y cerrar sí cuenta','Si el paciente abre la sesión y la cierra sin trabajar, el acceso se consume igual. Recargar la pantalla no duplica el consumo.'],
+    ['Un tratamiento largo, varios accesos','Cada acceso da 30 días. Si el paciente sigue trabajando después de esos 30 días, consumirá otro acceso.'],
+    [S.acct==='ent'?'Sin cortes':'La factura, el día de tu alta', S.acct==='ent'?'Al llegar a cero el servicio sigue activo. Nada se factura por sorpresa.':'Tu ciclo va del día en que te diste de alta a ese mismo día del mes siguiente, no del 1 al 30. Si te diste de alta un día 20, el ciclo va del 20 al 20 y la factura llega ese día.'],
+    S.acct==='mon' ? ['El periodo de prueba no se cobra','Lo que se use durante la prueba no se cobra nunca, aunque contrates ese mismo día.'] : ['Un solo saldo','Los meses que tenías y los packs que compres se suman en una sola cifra. Se gasta antes de que se facture nada.'],
+    ['Quién puede enviar a casa','Los profesionales con permiso. El administrador lo activa o lo quita a cada uno, uno a uno.']
+  ];
+  return '<div class="faq">'+it.map(function(q){return '<div class="fq"><b>'+q[0]+'</b><p>'+q[1]+'</p></div>';}).join('')+'</div>';
+}
+
+/* ================= 1. Página de NeuronUP2GO ================= */
+function pageRight(a){
+  if(a.hadBalance){
+    var b = a.balance+' accesos';
+    return '<img src="'+IMG.n2g+'" alt=""><span>Saldo de accesos</span><b>'+b+'</b>';
+  }
+  return '<img src="'+IMG.n2g+'" alt=""><span>Accesos consumidos este ciclo</span><b>'+a.consumed+'</b>';
+}
+function ventajas(){
+  var man=S.acct==='ent', rec=S.mmod==='rec';
+  var lead = !man ? 'Pagas solo por los accesos que se usan, y solo cuando se usan. Si un mes nadie trabaja en casa, no cuesta nada.'
+    : rec ? 'Funciona como una tarifa plana mensual: cada mes tienes tus 15 accesos para que tus pacientes trabajen en casa sin que tengas que estar pendiente.'
+    : 'Funciona como una tarifa plana: tienes todos los accesos del año desde el primer día y los repartes como quieras entre tus pacientes.';
+  var it=[
+   ['inventory_2','Nada que comprar ni repartir','Mandas trabajo a casa cuando lo necesitas, sin asignar meses a cada paciente.'],
+   ['touch_app','Solo cuenta el uso real','El acceso se gasta cuando el paciente empieza, no al enviarle la sesión.'],
+   ['savings','No pierdes nada','Los meses que ya tenías pasan a tu saldo, a razón de 1 mes = 1 acceso.'],
+   ['accessibility_new','Tus pacientes no se paran', man?'Si llegas a cero el servicio sigue activo y la intervención no se interrumpe.':'Si se acaba el saldo siguen trabajando; el consumo se paga a mes vencido.'],
+   ['insights','Ves a dónde va tu inversión','Cada mes ves qué pacientes y qué profesionales trabajan en casa.'],
+   ['verified_user','Sin sorpresas', man?'Nada se cobra solo: si un año usas más, lo ves con tu comercial en la renovación.':'Ves el consumo del ciclo y la estimación de la factura antes de que llegue.']
+  ];
+  return '<div class="mcard"><p class="ctitle">Lo que ganas con NeuronUP2GO</p><p class="vlead">'+lead+'</p><div class="vgrid">'
+    +it.map(function(x){return '<div class="vt"><span class="vic"><span class="mi">'+x[0]+'</span></span><div><b>'+x[1]+'</b><p>'+x[2]+'</p></div></div>';}).join('')+'</div></div>';
+}
+function page(){
+  var a=A[S.acct];
+  var k1, k2, k3;
+  if(a.hadBalance){
+    k1='<div class="kpi'+(a.balance===0?' warn':'')+'"><h3>Saldo disponible</h3><div class="big">'+a.balance+'<small>accesos</small></div>'
+      +'<p>'+a.k1+'</p></div>';
+  } else {
+    k1='<div class="kpi"><h3>Precio por acceso</h3><div class="big">3,00 €</div><p>Tramo 6-15 accesos este ciclo · baja con el volumen</p></div>';
+  }
+  k2='<div class="kpi"><h3>Accesos consumidos</h3><div class="big">'+a.consumed+'<small>accesos</small></div><p>'+(S.acct==='ent'?'Este mes · ':'Este ciclo · ')+a.cicloCorto+'</p><span class="est">Estimación</span></div>';
+  if(S.acct==='ent') k3='<div class="kpi"><h3>Por encima del saldo</h3><div class="big" style="color:var(--orange)">'+a.over+'<small>accesos</small></div><p>'+(a.over>0?'Se revisa con tu comercial en la renovación del '+a.next:'Nada por encima del saldo · renovación el '+a.next)+'</p></div>';
+  else k3='<div class="kpi"><h3>Próxima factura de NeuronUP2GO<span class="tip" tabindex="0"><span class="mi">info_outline</span><span class="bub"><b>Cómo se calcula:</b> accesos de este ciclo que no cubre tu saldo × precio por acceso. '+a.tip+' Es una estimación: la cifra final es la de tu factura.</span></span></h3><div class="big">'+V(a.cost)+'</div><p>'+a.next+' · '+a.nextNote+'</p><span class="est">Estimación</span></div>';
+
+  var c1='<div class="mcard"><p class="ctitle">Cómo va tu cuenta <span class="mi">help_outline</span></p>'
+    +'<div class="cols3">'+k1+'<div class="vsep"></div>'+k2+'<div class="vsep"></div>'+k3+'</div>'
+    +'<div class="cfoot"><span class="lnk">Ver el detalle acceso a acceso en Administración › Facturas <span class="mi">arrow_forward</span></span>'
+    +(S.acct==='ent'||S.acct==='mid'||S.acct==='ann'?'<span class="lnk">Hablar con mi comercial <span class="mi">arrow_forward</span></span>':'<span class="lnk">Ver tabla de tarifas <span class="mi">open_in_new</span></span>')+'</div></div>';
+
+  var act=ROWS.filter(function(r){return r[4]==='act';});
+  var c2='<div class="mcard"><h2>Accesos abiertos ahora mismo<small>'+act.length+' accesos con la ventana abierta · ordenados por los días que les quedan</small></h2>'
+    +'<div class="tbl"><table><tr><th>Usuario</th><th>Profesional</th><th>Empezó</th><th>Acceso hasta</th><th>Estado</th></tr>'
+    +act.slice().reverse().map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+st('s-act','Quedan '+r[5]+' días','schedule')+'</td></tr>';}).join('')
+    +'<tr><td>Tomás Gil</td><td>Laura Pérez</td><td style="color:var(--soft)">Sesión asignada, sin empezar</td><td style="color:var(--soft)">·</td><td>'+st('s-end','Sin acceso todavía','')+'</td></tr>'
+    +'</table></div></div>';
+
+  var c3='<div class="mcard"><p class="ctitle">Cómo funciona el nuevo modelo</p><div class="steps3">'
+    +'<div class="step"><span class="n">1</span><b>Envías la sesión para casa</b><p>Selecciona la sesión que quieres que haga en casa y listo. No hace falta asignar meses ni saldo, y preparar o enviar no cuesta nada.</p></div>'
+    +'<div class="step"><span class="n">2</span><b>El paciente empieza</b><p>En el momento en que el paciente empieza la sesión desde su casa se consume un acceso'+(a.hadBalance?' de tu saldo':'')+', que le abre una ventana de 30 días.</p></div>'
+    +'<div class="step"><span class="n">3</span><b>Una ventana de 30 días</b><p>Desde que empieza, el paciente tiene 30 días para hacer todas las sesiones que necesite sin consumir otro acceso.</p></div>'
+    +'</div>'+diagrama()+'<div class="sec2">'+esquemaSaldo()+cuesta()+'</div>'+faq()+'</div>';
+
+  return frame('Gestión de pacientes',SB_USERS,'NeuronUP2GO','NeuronUP2GO',pageRight(a),'<div class="content">'+banda()+c1+c2+ventajas()+c3+'</div>');
+}
+
+/* ================= 0. Modals ================= */
+var ICON_ACT='<svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="22" cy="14" rx="15" ry="10.5" fill="#fff"/><path d="M12 21 9 27l8-4z" fill="#fff"/><text x="22" y="17.5" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="10" fill="#434751">abc...</text><path d="M7 27c4 6 22 6 26 0" stroke="#fff" stroke-width="2.4" fill="none"/><path d="M10 30.5h20" stroke="#fff" stroke-width="1.4" stroke-dasharray="2 1.5"/></svg>';
+function nmFb(kind,ic,html){return '<div class="nm-fb '+kind+'"><span class="mi">'+ic+'</span><div>'+html+'</div></div>';}
+function mCase(){
+  var man=S.acct==='ent', f=S.fu;
+  if(f==='aviso'){
+    var mt = man ? 'Se descuenta de tu saldo, incluido en tu acuerdo. Si llegas a cero no se corta nada: lo que pase se revisa con tu comercial en la renovación.'
+                 : 'Precio por acceso: '+V('{{PRECIO}}')+' sin IVA (<span class="nm-lk">ver tarifas</span>). Se descuenta primero de tu saldo; cuando se acabe, se factura cada mes, el día de tu alta.';
+    var fb=nmFb('info','home','<b>Las sesiones para casa consumen accesos.</b> Cuando Elina <b>empiece</b> se '+(man?'descontará':'consumirá')+' <b>un acceso</b>, que le da <b>30 días</b> para hacer todas las sesiones que necesite.<span class="mt">'+mt+'</span><span class="ac"><span class="nm-bt p">Aceptar y continuar</span><span class="nm-bt o">Usarla solo en el centro</span></span>');
+    return {sw:true, fb:fb, fbW:fb, dis:true};
+  }
+  if(f==='perm') return {sw:true, dis:true,
+    fb:nmFb('warn','lock','<b>Acceso restringido.</b> Tu perfil no tiene permiso para asignar sesiones para casa.<span class="mt">Puedes pedir información a tu administrador desde aquí.</span><span class="ac"><span class="nm-bt p">Solicitar información</span><span class="nm-bt o">Usarla solo en el centro</span></span>'),
+    fbW:nmFb('stop','error_outline','<b>No tienes permiso para asignar sesiones para casa.</b> Solicita acceso a tu administrador o quita la opción «para casa» para continuar.')};
+  if(f==='noadd'){var t = man ? '<b>Tu centro no tiene NeuronUP2GO contratado.</b> Para que tus pacientes puedan trabajar desde casa hay que activarlo en tu acuerdo.<span class="mt">Tu sesión se guarda con toda su configuración. Mientras tanto puedes usarla en el centro con normalidad.</span><span class="ac"><span class="nm-bt p">Ponte en contacto con ventas</span><span class="nm-bt o">Usarla solo en el centro</span></span>'
+                         : '<b>Tu suscripción no incluye NeuronUP2GO.</b> Para que tus pacientes puedan trabajar desde casa hay que activarlo.<span class="mt">Tu sesión se guarda con toda su configuración. Mientras tanto puedes usarla en el centro con normalidad.</span><span class="ac"><span class="nm-bt p">Ponte en contacto con ventas</span><span class="nm-bt o">Usarla solo en el centro</span></span>';
+    var x=nmFb('stop','lock',t); return {sw:true, dis:true, fb:x, fbW:x};}
+  if(f==='dia') return {sw:true};
+  if(f==='rec') return {sw:true, line:'Las sesiones para casa pueden suponer un pago adicional.'};
+  return {};
+}
+function fields(a,b){return '<div class="nm-flds"><div class="nm-fld"><i>Fecha de inicio*</i>'+a+'<span class="mi">event</span></div><div class="nm-fld"><i>Fecha de fin*</i>'+b+'<span class="mi">event</span></div></div>';}
+function toggle(on){return '<div class="nm-tg"><span class="mi home">home</span><span>Sesión para casa</span><span class="nm-sw'+(on?' on':'')+'"><b></b></span><span class="yn">'+(on?'SÍ':'NO')+'</span></div>';}
+function mDialog(c){
+  return '<div class="nm nm-dlg"><div class="nm-h">'+ICON_ACT+'<h4 class="tt">qwerty</h4><span class="x"><span class="mi">close</span></span></div>'
+   +'<div class="nm-b"><div class="nm-who"><span class="nm-av">EM</span><h5>Elina Maltseva</h5><span class="st">Sin empezar</span></div>'
+   +'<strong class="nm-cfg">Configuración</strong>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">calendar_month</span>Fecha y lugar<span class="mi ch">expand_less</span></div><div class="nm-pc"><p class="dur">La duración máxima es de 15 días</p>'+fields('27/10/2026','27/10/2026')+toggle(c.sw)+(c.line?'<p class="nm-line">'+c.line+'</p>':'')+(c.fb||'')+'</div></div>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">tune</span>Configurar sesión<span class="mi ch">expand_more</span></div></div>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">message</span>Mensajes<span class="mi ch">expand_more</span></div></div>'
+   +'<div class="nm-meta"><div><span class="mi">manage_accounts</span>Asignada por: Jorge MC<span class="mi">format_list_bulleted</span>Nº de actividades: 6</div><div><span class="mi">bar_chart</span>Áreas predominantes: Vocabulario, M. trabajo, Razonamiento</div></div></div>'
+   +'<div class="nm-f"><span class="nm-bt '+(c.dis?'dis':'p')+'">Empezar</span><span class="nm-bt s">Generar Similar ✦Ai</span><span class="mi k">more_vert</span></div></div>';
+}
+function mWizard(c){
+  return '<div class="nm nm-wz"><div class="nm-h">'+ICON_ACT+'<h4 class="tt">qwerty</h4><span class="x"><span class="mi">close</span></span></div>'
+   +'<div class="nm-steps"><span class="s on"><span class="n">1</span>Asignar sesión</span><span class="ln"></span><span class="s"><span class="n">2</span>Configurar sesión</span><span class="ln"></span><span class="s"><span class="n">3</span><span>Mensaje<span class="opt">Opcional</span></span></span></div>'
+   +'<div class="nm-wb"><h4>Selecciona un día</h4><p class="dur">La duración máxima es de 15 días</p>'+fields('27/10/2026','27/10/2026')+toggle(c.sw)
+   +(c.line?'<p class="nm-line">'+c.line+'</p>':'')+'<div class="fbw">'+(c.fbW||'')+'</div></div>'
+   +'<div class="nm-asg"><h5>Asignada a:</h5><div class="w"><span class="nm-av">EM</span>Elina Maltseva</div></div>'
+   +'<div class="nm-wf"><span class="nm-bt '+(c.dis?'dis':'p')+'">Continuar</span></div></div>';
+}
+var ICON_PROG='<svg class="ic" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 20a8 8 0 0 1 15 2l1 3h-3v3a3 3 0 0 1-3 3h-2v4H8v-5a8 8 0 0 1-2-10z" fill="#fff"/><circle cx="29" cy="12" r="8" fill="#fff"/><path d="M22 18l-2 4 5-2z" fill="#fff"/><path d="M29 16s-4-2.6-4-5a2 2 0 0 1 4-1 2 2 0 0 1 4 1c0 2.4-4 5-4 5z" fill="#434751"/></svg>';
+function pSteps(cur){var L=['Asignar programa','Planificar programa','Configurar programa'];
+  return '<div class="nm-steps">'+L.map(function(t,i){var n=i+1;return '<span class="s'+(n<=cur?' on':'')+(n===cur&&cur>1?' cur':'')+'"><span class="n">'+n+'</span><span>'+t+'</span></span>'+(n<3?'<span class="ln"></span>':'');}).join('')+'</div>';}
+function mProgW1(c){
+  return '<div class="nm nm-wz"><div class="nm-h">'+ICON_PROG+'<h4 class="tt">Prog 3 mois</h4><span class="x"><span class="mi">close</span></span></div>'+pSteps(1)
+   +'<div class="nm-wb"><h4>Selecciona un día</h4><div class="one"><div class="nm-fld"><i>Fecha de inicio*</i>27/10/2026<span class="mi">event</span></div></div>'
+   +'<div class="nm-tg"><span class="mi home">home</span><span>Programa para casa</span><span class="nm-sw'+(c.sw?' on':'')+'"><b></b></span><span class="yn">'+(c.sw?'SÍ':'NO')+'</span></div>'
+   +(c.line?'<p class="nm-line">'+c.line+'</p>':'')+'<div class="fbw">'+(c.fbW||'')+'</div></div>'
+   +'<div class="nm-asg"><h5>Asignado a:</h5><div class="w"><span class="nm-av">EM</span>Elina Maltseva</div></div>'
+   +'<div class="nm-wf"><span class="nm-bt '+(c.dis?'dis':'p')+'">Continuar</span></div></div>';
+}
+function mProgW2(){
+  function cps(a,on){return '<div class="nm-cps">'+a.map(function(t,i){return '<span'+(i===on?' class="on"><span class="mi">check</span>':'>')+t+'</span>';}).join('')+'</div>';}
+  return '<div class="nm nm-wz"><div class="nm-h">'+ICON_PROG+'<h4 class="tt">Prog 3 mois</h4><span class="x"><span class="mi">close</span></span></div>'+pSteps(2)
+   +'<div class="nm-pw"><h4>Planificar programa</h4><p>Fecha de inicio: martes, 27 de octubre de 2026</p><p>Nº de sesiones: 6</p>'
+   +'<div class="q">Selecciona los días de la semana que se trabajarán las sesiones del programa</div>'+cps(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'],1)
+   +'<div class="q">¿Qué frecuencia de trabajo seguirás con las sesiones del programa?</div>'+cps(['Cada semana','Cada 2 semanas','Cada 3 semanas','Cada 4 semanas'],0)
+   +'<div class="q">¿Cuántos días tiene el paciente para hacer cada sesión?</div>'+cps(['1 día','2 días','3 días','4 días','5 días','6 días','7 días','14 días'],0)
+   +nmFb('warn','warning_amber','<b>Con esta planificación, el programa se extiende más allá de este mes.</b><span class="mt">Puede consumir accesos en meses siguientes, según lo que trabajen tus pacientes.</span>')+'</div>'
+   +'<div class="nm-wf"><span class="nm-bt p">Continuar</span></div></div>';
+}
+function mProgDlg(c){
+  return '<div class="nm nm-dlg nm-pdlg"><div class="nm-h nm-ph2"><div class="hr">'+ICON_PROG+'<div><span class="lb">Nombre del programa:</span><h4 class="tt">Prog 3 mois</h4></div></div>'
+   +'<div class="nm-pills"><span><span class="mi">visibility</span>Ver programa</span><span><span class="mi">edit</span>Editar programa</span><span><span class="mi">content_copy</span>Duplicar programa</span><span><span class="mi">delete</span>Eliminar programa</span></div><span class="x"><span class="mi">close</span></span></div>'
+   +'<div class="nm-b"><div class="nm-who2"><span class="nm-av">EM</span><span class="t"><small>Nombre de la sesión del programa:</small><b>Attention</b><strong>Elina Maltseva</strong></span><span class="st">Sin empezar</span></div>'
+   +'<strong class="nm-cfg">Configuración</strong>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">calendar_month</span>Fecha y lugar<span class="mi ch">expand_less</span></div><div class="nm-pc"><p class="dur">La duración máxima es de 15 días</p>'+fields('27/10/2026','27/10/2026')+toggle(c.sw)+(c.line?'<p class="nm-line">'+c.line+'</p>':'')+(c.fb||'')+'</div></div>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">tune</span>Configurar sesión<span class="mi ch">expand_more</span></div></div>'
+   +'<div class="nm-pan"><div class="nm-ph"><span class="mi">message</span>Mensajes<span class="mi ch">expand_more</span></div></div>'
+   +'<div class="nm-meta"><div><span class="mi">manage_accounts</span>Asignada por: Jorge MC<span class="mi">format_list_bulleted</span>Nº de actividades: 5</div><div><span class="mi">bar_chart</span>Áreas predominantes: G. visuales, A. selectiva, A. alternante</div></div></div>'
+   +'<div class="nm-f"><span class="nm-bt '+(c.dis?'dis':'p')+'">Empezar</span><span class="nm-bt s">Generar Similar ✦Ai</span><span class="mi k">more_vert</span></div></div>';
+}
+function mProg(){
+  return '<div class="nm nm-wz"><div class="nm-h">'+ICON_ACT+'<h4 class="tt">Programa Memoria</h4><span class="x"><span class="mi">close</span></span></div>'
+   +'<div class="nm-steps"><span class="s"><span class="n">1</span>Seleccionar programa</span><span class="ln"></span><span class="s on"><span class="n">2</span>Planificar programa</span><span class="ln"></span><span class="s"><span class="n">3</span>Pacientes</span></div>'
+   +'<div class="nm-wb"><h4>Planifica el programa</h4><p class="dur">Empieza el 27/10/2026 · 12 sesiones</p>'
+   +'<p class="nm-q">¿Qué días de la semana?</p><div class="nm-days"><span class="on">L</span><span>M</span><span class="on">X</span><span>J</span><span class="on">V</span><span>S</span><span>D</span></div>'
+   +'<div class="fbw">'+nmFb('warn','warning_amber','<b>Con esta planificación, el programa se extiende más allá de este mes.</b><span class="mt">Puede consumir accesos en meses siguientes, según lo que trabajen tus pacientes.</span>')+'</div></div>'
+   +'<div class="nm-asg"></div><div class="nm-wf"><span class="nm-bt p">Continuar</span></div></div>';
+}
+var CAP = {
+ aviso:[['Diálogo de una sesión','Aparece al poner «Sesión para casa» en SÍ en una sesión ya creada, la primera vez que el profesional lo hace en este navegador.','«Empezar» queda deshabilitado hasta aceptar. «Usarla solo en el centro» vuelve el interruptor a NO.'],
+        ['Asistente de asignación','Aparece en el paso 1 del asistente, al asignar una sesión sobre el calendario y poner «Sesión para casa» en SÍ.','«Continuar» queda deshabilitado hasta aceptar.']],
+ perm:[['Diálogo de una sesión','Aparece al poner «Sesión para casa» en SÍ si el perfil del profesional no tiene permiso de NeuronUP2GO. No se bloquea el interruptor: se explica.','«Solicitar información» avisa al administrador.'],
+       ['Asistente de asignación · si intenta continuar','Si el profesional sigue adelante sin permiso, el asistente muestra el error y no deja continuar con «para casa».','Única excepción: la pantalla donde cada cambio se guarda al instante, que no deja marcar y dice «requiere un plan superior».']],
+ noadd:[['Diálogo de una sesión','Aparece al poner «Sesión para casa» en SÍ si el centro no tiene NeuronUP2GO.','La sesión se guarda con su configuración y se puede usar en el centro.'],
+        ['Asistente de asignación','Mismo mensaje, en el paso 1 del asistente.','']],
+ dia:[['Diálogo de una sesión','Después de aceptar el aviso, el diálogo vuelve a ser el de producción: ni contadores, ni importes, ni fechas de acceso.','Esa información vive en la página de NeuronUP2GO y en Facturas.'],
+      ['Asistente de asignación','Igual: el asistente no muestra nada sobre consumo.','']],
+ rec:[['Diálogo de una sesión','Variante con una línea fija bajo el interruptor, sin caja ni color, como la de «la duración máxima es de 15 días».','Frase añadida por César en desarrollo. Falta confirmar si va siempre o solo en esta variante.'],
+      ['Asistente de asignación','La misma línea en el paso 1.','Si el aviso de primer uso se guarda por navegador, en un ordenador compartido esta línea puede ser la única señal de coste.']],
+ prog:[['Asistente de programas · paso 1','Al asignar un programa sobre el calendario y poner «Programa para casa» en SÍ. En el día a día no se dice nada aquí; si es la primera vez del profesional, sale el aviso de primer uso.',''],
+       ['Asistente de programas · paso 2','El único aviso de programas. Aparece solo si la planificación se sale del mes en curso (en el ejemplo, 6 martes desde el 27/10 llegan a diciembre). Dentro del mes no se dice nada.','No lleva cifras y no bloquea: «Continuar» sigue activo.'],
+       ['Diálogo de una sesión de programa','Mismo comportamiento que el diálogo de una sesión: en el día a día no enseña consumo. La primera vez, sin permiso o sin NeuronUP2GO, los mismos mensajes al poner «Sesión para casa» en SÍ.','']],
+ progx:{
+  aviso:[['Asistente de programas · paso 1','Si lo primero que el profesional manda a casa es un programa, el aviso de primer uso aparece aquí, al poner «Programa para casa» en SÍ.','«Continuar» queda deshabilitado hasta aceptar. Aceptar aquí vale para todo el programa y para las demás entradas.'],
+         ['Diálogo de una sesión de programa','Si el programa se asignó sin «para casa» y después se activa en una de sus sesiones, el aviso aparece en este diálogo, igual que en el de una sesión suelta.','«Empezar» queda deshabilitado hasta aceptar.']],
+  perm:[['Asistente de programas · paso 1','Mismo banner de acceso restringido al poner «Programa para casa» en SÍ sin permiso.',''],
+        ['Diálogo de una sesión de programa','Mismo banner al poner «Sesión para casa» en SÍ en una sesión del programa.','']],
+  noadd:[['Asistente de programas · paso 1','Mismo mensaje al poner «Programa para casa» en SÍ si el centro no tiene NeuronUP2GO.',''],
+         ['Diálogo de una sesión de programa','Mismo mensaje en el diálogo de una sesión del programa.','']]
+ },
+ progaviso:['Asistente de programas · paso 1','La tercera entrada a «para casa». El aviso de primer uso aparece aquí igual que en las sesiones, al poner «Programa para casa» en SÍ.','«Continuar» queda deshabilitado hasta aceptar. Sin permiso y sin NeuronUP2GO se comportan igual que en el asistente de sesiones.']
+};
+function cap(c,same){return '<div class="mcap"><h5>Cuándo aparece · '+c[0]+'</h5><p>'+c[1]+'</p>'+(c[2]?'<p>'+c[2]+'</p>':'')+(same?'<span class="same">Es el mismo componente y la misma aceptación en las cuatro entradas (diálogo de sesión, asistente de sesiones, asistente de programas y diálogo de sesión de programa): quien acepta en una no lo vuelve a ver en las otras.</span>':'')+'</div>';}
+function modals(){
+  var c=mCase(), C=CAP[S.fu];
+  if(S.fu==='prog') return '<div class="mstage"><div class="mrow">'+mProgW1({sw:true})+cap(C[0])+'</div><div class="mrow">'+mProgW2()+cap(C[1])+'</div><div class="mrow">'+mProgDlg({sw:true})+cap(C[2])+'</div></div>';
+  var rows='<div class="mrow">'+mDialog(c)+cap(C[0])+'</div><div class="mrow">'+mWizard(c)+cap(C[1],S.fu==='aviso')+'</div>';
+  if(S.fu==='aviso'||S.fu==='perm'||S.fu==='noadd'){var P=CAP.progx[S.fu];
+    rows+='<div class="mrow">'+mProgW1(c)+cap(P[0])+'</div><div class="mrow">'+mProgDlg(c)+cap(P[1])+'</div>';}
+  return '<div class="mstage">'+rows+'</div>';
+}
+
+/* ================= 4. Administración › Profesionales ================= */
+function prof(){
+  var man=S.acct==='ent', on=S.perm==='si';
+  var names=['Abel Colaneri','Adrián Saez','Albane Jeanblanc','Alberto Gómez','Álvaro Carbajo','Alvaro Valdés','Amanda Souza','Ana Martínez García'];
+  var list='<div class="pf-list"><div class="pf-srch"><span class="mi">search</span>Buscar profesional</div>'
+    +names.map(function(n,i){return '<div class="pf-it'+(i===0?' on':'')+'"><span class="pf-ph"><span class="mi">person</span></span>'+n+'</div>';}).join('')
+    +'<div class="pf-new"><span class="mi">add_circle_outline</span>Nuevo profesional</div><div class="pf-cnt">Nº de profesionales: 15 / 77</div></div>';
+  var cols=['#2F3B41','#4CAF50','#E5379A','#2F3B41','#9AA8AE','#F5A623','#4CAF50','#E5379A','#9AA8AE','#E5379A','#E9643B','#E5379A'];
+  var tip = on
+    ? '<div class="pf-tip"><b>NeuronUP2GO activo para este profesional.</b> Puede enviar sesiones y programas para casa. Cada paciente que empieza consume un acceso'+(man?' del saldo de vuestro acuerdo.':' del saldo y, cuando se acabe, se factura según la tarifa.')+' La primera vez tendrá que aceptar el aviso de coste.</div>'
+    : '<div class="pf-tip"><b>NeuronUP2GO desactivado para este profesional.</b> Puede preparar sesiones, pero al intentar enviarlas a casa verá «acceso restringido» con la opción de pedírtelo.</div>';
+  var main='<div class="pf-main"><div class="pf-card"><div class="pf-top"><span class="mi">delete_outline</span>Eliminar profesional</div><div class="pf-body"><div>'
+    +'<div class="pf-head"><span class="pf-big"><span class="mi">person</span></span><div><h3>Abel Colaneri</h3><p class="la">Último acceso: 14 abr 2026, 16:37:58</p><p class="pf-ed"><span class="mi">edit</span>Editar información básica</p>'
+    +'<div class="pf-sub">Información relevante</div><div class="pf-kv"><span>Especialidad:<b>-</b></span><span>Teléfono:<b>-</b></span></div><p class="pf-ed"><span class="mi">edit</span>Editar información relevante</p></div></div>'
+    +'<div class="pf-pats"><h4>Pacientes con los que trabaja Abel</h4><div class="row">'+cols.map(function(c){return '<i style="background:'+c+'"></i>';}).join('')+'</div></div></div>'
+    +'<div><div class="pf-box"><h4>Datos de acceso</h4><small>Usuario:</small><span class="v">abel.colaneri</span><small>Email:</small><span class="v">-</span><small>Contraseña:</small><span class="v">******</span></div>'
+    +'<div class="pf-box perm"><h4>Permisos</h4><div class="pf-pr"><span class="mi">manage_accounts</span>Administrador</div><div class="pf-tg"><span class="nm-sw"><b></b></span><span>NO</span></div>'
+    +'<div class="pf-pr"><span class="mi">work</span>NeuronUP2GO <span class="mi q">help_outline</span></div><div class="pf-tg"><span class="nm-sw'+(on?' on':'')+'"><b></b></span><span>'+(on?'SÍ':'NO')+'</span></div>'+tip+'</div>'
+    +'<div class="pf-nl"><i></i>Recibir newsletters</div></div></div></div></div>';
+  var right='<span class="muted">Nº de profesionales <b style="font-size:16px">77</b> / 90</span><span class="btn b-out" style="color:var(--cyan-d);border-color:var(--cyan-d)"><span class="mi">add_circle_outline</span>Nuevo profesional</span>';
+  return frame('Administración',SB_ADMIN,'Profesionales','Profesionales',right,'<div class="pf-wrap">'+list+main+'</div>');
+}
+
+/* ================= 6. Flujos fuera de la app ================= */
+function flStep(who,cls,title,txt,st,ok){return '<div class="fl-st"><span class="who '+cls+'">'+who+'</span><b>'+title+'</b><p>'+txt+'</p>'+(st?'<span class="st '+(ok?'ok':'no')+'">'+st+'</span>':'')+'</div>';}
+var ARW='<span class="fl-ar">›</span>';
+function flows(){
+  var man=S.acct==='ent', f;
+  if(S.flow==='tar'){
+    f='<div class="fl"><h3>Tabla de tarifas en una URL oficial<span class="fl-tag todo">Por hacer · marketing</span></h3>'
+     +'<p class="lead">El contrato exige que la tarifa esté publicada en una URL oficial y permanente, accesible sin iniciar sesión, y que el aviso de primer uso la enlace. Sin esa URL publicada el día del cambio, el aviso incumple lo firmado.</p>'
+     +'<div class="fl-steps">'
+     +flStep('Marketing','mk','Publica la tabla de tarifas','Página en la web oficial con el precio por acceso: 9,90 € sin IVA, precio único. Los descuentos por volumen van en campañas.','Por hacer',false)+ARW
+     +flStep('Producto','pr','Fija la URL en la app','El aviso de primer uso («ver tarifas») y la página de NeuronUP2GO («Ver tabla de tarifas») enlazan esa URL. En manual no se enlaza: el precio va en el acuerdo.','Pendiente de la URL',false)+ARW
+     +flStep('Marketing y operaciones','op','Si cambia la tarifa','Aviso con 15 días de antelación, por correo y en el panel de administración.','Por definir quién lo envía',false)
+     +'</div><ul class="fl-notes"><li><b>Pendiente de negocio:</b> si los 9,90 € valen también para enterprise y qué precio se publica en libras, dólares australianos y rupias.</li><li><b>Dependencia:</b> el aviso de primer uso no debería salir en Stripe sin la URL publicada.</li></ul></div>';
+  } else {
+    f='<div class="fl"><h3>Correo al agotarse el saldo<span class="fl-tag todo">Por hacer · operaciones</span></h3>'
+     +'<p class="lead">Fuera de la app. Sirve para que el centro no pueda alegar desconocimiento cuando empieza a generar consumo. Lo envía operaciones a partir del dato de saldo que da la plataforma.</p>'
+     +'<div class="fl-steps">'
+     +flStep('Operaciones','op','Al 85 % del saldo','Alerta interna a ventas para llamar al cliente antes de que se agote. El cliente no recibe nada.','Por montar',false)+ARW
+     +flStep('Plataforma','dv','El saldo llega a 0','La plataforma expone el saldo y el momento en que se agota, para que operaciones lo detecte.','Confirmar con César qué dato o evento hay',false)+ARW
+     +flStep('Operaciones','op','Correo al administrador',man?'Texto sin decidir: en manual no hay cobro automático, así que «pospago» no aplica. Puede servir para anticipar la conversación de la renovación.':'«Tu centro ha agotado el saldo y ha comenzado a generar consumo en modalidad pospago.» Una sola vez por agotamiento.',man?'Sin decidir':'Por hacer',false)+ARW
+     +flStep('Ventas','ve','Seguimiento',man?'El consumo por encima del saldo se revisa en la renovación: regalarlo, facturarlo o ampliar volumen.':'Upselling si el consumo sigue creciendo. La factura de Stripe se emite sola.','',false)
+     +'</div><ul class="fl-notes"><li><b>Pendiente:</b> qué recibe un centro manual (administración y legal).</li><li><b>Recarga mensual (en validación):</b> el saldo se agotaría cada mes; habría que decidir si el correo sale una vez al mes o solo la primera.</li></ul></div>';
+  }
+  return '<div class="fl-wrap">'+f+'</div>';
+}
+
+/* ================= 2. Facturas › NeuronUP2GO ================= */
+function inv(){
+  var a=A[S.acct];
+  var tiles='';
+  tiles+='<div class="tile cy"><div class="tl">Accesos consumidos '+(S.acct==='ent'?'en el periodo':'en el ciclo')+'</div><div class="tv">'+a.consumed+'<small>accesos</small></div><div class="tf">'+a.ciclo+'</div></div>';
+  if(S.acct==='ent') tiles+='<div class="tile or"><div class="tl">Coste</div><div class="tv">Incluido<small>en tu acuerdo</small></div><div class="tf">'+(a.over>0?a.over+' accesos por encima del saldo · se revisan en la renovación':'Nada por encima del saldo')+'</div></div>';
+  else tiles+='<div class="tile"><div class="tl">Coste estimado del ciclo</div><div class="tv">'+V(a.cost)+'</div><div class="tf">'+a.costNote+' · factura el '+a.next+'</div></div>';
+  if(a.hadBalance) tiles+='<div class="tile"><div class="tl">Saldo de accesos</div><div class="tv">'+a.balance+'<small>accesos</small></div><div class="tf">'+a.tileBal+'</div></div>';
+  else tiles+='<div class="tile"><div class="tl">Próxima factura</div><div class="tv">'+a.next+'</div><div class="tf">'+a.nextNote+'</div></div>';
+
+  var filt = S.acct==='ent'
+    ? '<div class="fld grow"><span class="mi">search</span><span style="color:rgba(0,0,0,.42)">Buscar usuario o profesional</span></div><div class="fld" style="min-width:220px"><span class="lb">Fecha de inicio</span>01/09/2026<span class="mi" style="margin-left:auto">event</span></div><div class="fld" style="min-width:220px"><span class="lb">Fecha de fin</span>30/09/2026<span class="mi" style="margin-left:auto">event</span></div>'
+    : '<div class="fld grow"><span class="mi">search</span><span style="color:rgba(0,0,0,.42)">Buscar usuario o profesional</span></div><div class="fld sel"><span class="lb">Ciclo de facturación</span>'+a.ciclo+' · actual<span class="mi">arrow_drop_down</span></div>';
+
+  var rows=ROWS.map(function(r,i){
+    var stt = r[4]==='act'? st('s-act','Activa','radio_button_checked') : st('s-end','Terminada','');
+    return '<tr><td>'+r[2]+'<small>'+(r[4]==='act'?'Acceso hasta el '+r[3]:'Terminó el '+r[3])+'</small></td><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+stt+'</td><td>'+cover(a,i)+'</td></tr>';
+  }).join('');
+
+  var body='<div class="tabs"><span>Facturas</span><span class="on">NeuronUP2GO</span></div>'
+    +'<div class="content"><div class="filters">'+filt+'</div>'
+    +'<div class="summary">'+tiles+'</div>'
+    +'<div class="tbl"><table><tr><th>Empezó</th><th>Usuario</th><th>Profesional</th><th>Ventana</th><th>'+(S.acct==='ent'?'Saldo':'Cubierto por')+'</th></tr>'+rows+'</table></div>'
+    +'<div class="pager">Nº de accesos: 6 / '+a.consumed+' <span class="mi">arrow_upward</span></div></div>';
+  return frame('Administración',SB_ADMIN,'Facturas','Facturas','',body);
+}
+
+/* ================= 3. Suscripción ================= */
+function feat(img,name,desc){return '<div class="feat"><img src="'+img+'" alt=""><div><span class="fn">'+name+'</span><span class="fd">'+desc+'</span></div><div class="fr"><span class="mi ck">check</span></div></div>';}
+var SUBD = {
+  mon:{plan:'Plan mensual Pro', renew:'20 oct 2026', dueLine:'Factura mensual pendiente', dueHead:'tu factura mensual (plan y NeuronUP2GO)', meta:'Este ciclo: 12 accesos<br>Estimado <span class="ph">{{IMPORTE_NUP2GO}}</span> · entra en la factura',
+       line:'20 oct 2026 · plan + NeuronUP2GO', lineNote:'Plan del ciclo que empieza y NeuronUP2GO del que acaba', dueCycle:'Ciclo 20 ago – 20 sept',
+       expl:'Recibes una sola factura al mes, el día en que te diste de alta, con tu plan y el consumo de NeuronUP2GO del ciclo que termina.',
+       dueTxt:'Como es la factura de tu plan, <b>si no se paga se cancelará toda la suscripción</b>, no solo NeuronUP2GO.'},
+  ann:{plan:'Plan anual Pro', dueLine:'Factura de NeuronUP2GO pendiente', dueHead:'tu factura de NeuronUP2GO', renew:'29 sept 2027', meta:'Este ciclo: 15 accesos<br>Estimado 0,00 € · cubierto por saldo',
+       line:'29 oct 2026 · NeuronUP2GO', lineNote:'Consumo del ciclo · estimado 0,00 €', dueCycle:'Ciclo 29 ago – 29 sept',
+       expl:'Tu plan se cobra una vez al año. NeuronUP2GO se factura aparte cada mes, el mismo día en que te diste de alta.',
+       dueTxt:'Si no se paga, <b>se cortará el acceso a NeuronUP2GO</b> y tus pacientes no podrán trabajar en casa hasta que se regularice. El resto de NeuronUP sigue funcionando.'},
+  mid:{plan:'Plan anual · cotización', dueLine:'Factura de NeuronUP2GO pendiente', dueHead:'tu factura de NeuronUP2GO', renew:'1 oct 2027', meta:'Saldo: 139 accesos<br>0,00 € mientras te quede saldo',
+       line:'1 nov 2026 · NeuronUP2GO', lineNote:'Consumo del ciclo · 0,00 € mientras te quede saldo', dueCycle:'Ciclo 1 sept – 1 oct',
+       expl:'Tu tramo incluye un saldo para todo el año. NeuronUP2GO solo genera factura si superas ese saldo.',
+       dueTxt:'Si no se paga, <b>se cortará el acceso a NeuronUP2GO</b> hasta que se regularice. El resto de NeuronUP sigue funcionando.'}
+};
+SUBD.ent_full={plan:'Acuerdo anual · NeuronUP2GO incluido', renew:'31 dic 2026', meta:'Saldo: 42 de los accesos del año<br>Incluido en tu acuerdo · nunca se corta',
+  line:'31 dic 2026 · revisión con tu comercial', lineNote:'Lo que pase del saldo se revisa en la renovación', expl:'Tu acuerdo se gestiona con tu comercial. NeuronUP2GO está incluido y no genera facturas automáticas.',
+  dueLine:'Factura del acuerdo pendiente', dueCycle:'Emitida el 1 oct 2026'};
+SUBD.ent_rec={plan:'Acuerdo anual · 15 accesos al mes', renew:'31 dic 2026', meta:'Este mes: 11 de 15 accesos<br>Incluido en tu acuerdo · nunca se corta',
+  line:'1 nov 2026 · el saldo se completa hasta 15', lineNote:'Lo que pase cada mes se revisa en la renovación', expl:'Tu acuerdo se gestiona con tu comercial. NeuronUP2GO está incluido, con 15 accesos al mes, y no genera facturas automáticas.',
+  dueLine:'Factura del acuerdo pendiente', dueCycle:'Emitida el 1 oct 2026'};
+function sub(){
+  var s=S.sub, n2g, man=(S.acct==='ent'), D=man? SUBD['ent_'+S.mmod] : (SUBD[S.acct]||SUBD.ann);
+  if(s==='on') n2g='<div class="feat n2g"><img src="'+IMG.n2g+'" alt=""><div><span class="fn">NeuronUP2GO</span><span class="fd">Sesiones para casa · '+(man?'incluido en tu acuerdo':'pago por uso, se factura cada mes')+'</span></div>'
+      +'<div class="fr"><span class="meta">'+D.meta+'</span><span class="mi ck">check</span></div></div>';
+  else if(s==='off') n2g='<div class="feat n2g off"><img src="'+IMG.n2g+'" alt=""><div><span class="fn">NeuronUP2GO</span><span class="fd">Sesiones para casa · no incluido en tu '+(man?'acuerdo':'suscripción')+'</span></div>'
+      +'<div class="fr"><span class="btn b-out">'+'Ponte en contacto con ventas</span></div></div>';
+  else n2g='<div class="feat n2g '+(man?'pend':'due')+'"><img src="'+IMG.n2g+'" alt=""><div><span class="fn">NeuronUP2GO</span><span class="fd">Sesiones para casa · '+(man?'incluido en tu acuerdo':'pago por uso')+'</span></div>'
+      +'<div class="fr">'+(man?st('s-inv','Pago del acuerdo pendiente','schedule'):st('s-over','Pendiente de pago','credit_card_off'))+'</div></div>';
+
+  var count = s==='off' ? '4 de 5 activas' : '5 de 5 activas';
+  var left='<div class="mcard"><h2>Funcionalidades incluidas<small>'+count+'</small></h2>'
+    +feat(IMG.act,'Adultos + Kids','Actividades digitales y en papel para adultos y niños')
+    +feat(IMG.test,'Tests','Acceso a todos los tests')
+    +feat(IMG.extra,'Profesional extra x3','Profesional extra')
+    +feat(IMG.stats,'Estadísticas','Acceso a las estadísticas')
+    +n2g
+    +'<div class="more"><span class="mi">support_agent</span>¿Quieres saber más sobre las características que te faltan? Habla con nosotros <span class="mi">arrow_forward</span></div></div>';
+
+  var renov='<div class="mcard side"><h2>Próxima renovación</h2>'
+    +'<div class="gbox"><span class="mi">calendar_today</span><span>'+D.renew+'<small>'+D.plan+'</small></span></div>'
+    +(s==='off'?'':'<div class="gbox" style="margin-top:10px"><span class="mi">receipt_long</span><span>'+(s==='due'?D.dueLine:D.line)+'<small>'+(s==='due'?D.dueCycle+(man?'':' · <span class="ph">{{IMPORTE}}</span>'):D.lineNote)+'</small></span>'+(s==='due'&&!man?'<span class="right" style="color:var(--danger);font-weight:600"><span class="ph">{{IMPORTE}}</span></span>':'')+'</div>')
+    +'<p>'+D.expl+'</p>'
+    +'<span class="btn b-out wide">Histórico de facturas</span></div>';
+  var pago= man ? '<div class="mcard side"><h2>Forma de pago</h2><div class="gbox"><span class="mi">account_balance</span><span>Según tu acuerdo<small>Transferencia o domiciliación · factura de administración</small></span></div><p class="tiny">Los cambios en la forma de pago se gestionan con administración: gestion@neuronup.com</p></div>'
+  : '<div class="mcard side"><h2>Método de pago</h2>'
+    +'<div class="gbox"><span class="mi">credit_card</span><span'+(s==='due'?' style="color:var(--danger)"':'')+'>Visa •••• 4242'+(s==='due'?'<small style="color:var(--danger)">El último cobro ha fallado</small>':'<small>Caduca 08/28</small>')+'</span><span class="right btn b-out" style="height:32px">'+(s==='due'?'Actualizar':'Cambiar')+'</span></div>'
+    +'<p class="tiny">El método de pago se gestiona de forma segura a través de Stripe</p></div>';
+  var help='<div class="mcard side"><h2>¿En qué podemos ayudarte?</h2><p>Estamos aquí para ayudarte y resolverte cualquier duda que tengas. Si necesitas ayuda, contacta con nosotros a través de:</p>'
+    +'<div class="contact"><div><span class="mi">chat_bubble_outline</span>+34 601 71 96 99</div><div><span class="mi">call</span>+34 941 287 238</div><div><span class="mi">email</span>gestion@neuronup.com</div><div class="c"><span class="mi">chat</span>Escríbenos en el chat</div></div></div>';
+
+  var alert = (s==='due' && man)
+    ? '<div class="alert a-info"><span class="mi">info_outline</span><div><b>Tenemos pendiente el pago de la factura de tu acuerdo.</b><br>Administración se pondrá en contacto contigo. NeuronUP2GO y el resto de NeuronUP siguen funcionando.</div><div class="acts"><span class="btn b-out">Ver factura</span></div></div>'
+    : s==='due'
+    ? '<div class="alert a-red"><span class="mi">error_outline</span><div><b>No hemos podido cobrar '+D.dueHead+' de <span class="ph">{{IMPORTE}}</span>.</b><br>Lo volveremos a intentar hasta el 6 oct. '+D.dueTxt+'</div><div class="acts"><span class="btn b-red">Pagar <span class="ph">{{IMPORTE}}</span></span><span class="btn b-out">Ver factura</span></div></div>'
+    : '';
+  var body='<div class="content">'+alert+'<div class="subgrid"><div class="col">'+left+'</div><div class="col">'+renov+pago+help+'</div></div></div>';
+  return frame('Administración',SB_ADMIN,'Suscripción','Suscripción','',body);
+}
+
+/* ================= notas para César ================= */
+var NOTES = {
+ prof:['<b>Activación del día del cambio:</b> en Stripe, NeuronUP2GO queda activo solo para los profesionales que ya tenían este permiso. Nadie gana acceso con el cambio.','<b>Quién lo cambia:</b> el administrador del centro. Desactivarlo no corta la ventana de un paciente que ya ha empezado: sigue hasta que termine.','<b>Texto de ayuda propuesto:</b> el del recuadro oscuro. Hoy el (?) no explica que activar el permiso genera consumo.'],
+ flows:['<b>Los flujos no son pantallas:</b> son piezas que hacen otros equipos y de las que depende la app. Se dejan aquí para que nadie las dé por hechas.'],
+ modals:[
+  '<b>La aceptación se guarda en el navegador</b> (localStorage, según César). El mismo profesional en otro ordenador lo vuelve a ver; en un ordenador compartido, quien acepta primero lo acepta para todos los que usen ese navegador. Si vuelve atrás sin aceptar, lo vuelve a ver.',
+  '<b>Cuenta al empezar la sesión, no al completarla.</b> Un paciente que abre la sesión y la cierra sin trabajar consume el acceso igual; recargar la pantalla no lo duplica.',
+  '<b>Única excepción a «no bloquear»:</b> la pantalla donde cada cambio se guarda al instante. Ahí el interruptor no se deja marcar y sale «requiere un plan superior».',
+  '<b>Copys provisionales:</b> pendientes de revisar contra lo implementado en el entorno de pruebas.'
+ ],
+ page:[
+  '<b>Lo que ganas con NeuronUP2GO:</b> ventajas rescatadas de la reunión con cliente del 21/10. El cliente lo resumió como una tarifa plana, y esa explicación se usa en manual. En Stripe no, porque allí se paga por uso.',
+  '<b>Precio:</b> en Stripe, precio único por acceso ({{PRECIO}}, 9,90 € sin IVA según Lucía). En manual, «incluido en tu acuerdo»: falta saber si los 9,90 € aplican también ahí.',
+  '<b>La próxima factura es lo importante:</b> solo el coste de NeuronUP2GO, con un tooltip que explica el cálculo (accesos no cubiertos por el saldo × precio por acceso) y la nota de que se añade a la factura del plan.',
+  '<b>Página transicional.</b> La banda de cambio y el bloque «Cómo funciona el nuevo modelo» están para las primeras semanas: propuesta, plegar el bloque explicativo pasados unos meses y quitar la banda; el estado de la cuenta y la lista de pacientes se quedan.',
+  '<b>Sustituye al formulario de asignar meses.</b> Desaparecen «Te quedan por asignar» y «Comprar más meses»: no hay tienda dentro de la aplicación.',
+  '<b>Arriba a la derecha</b>, saldo de accesos si el centro ha tenido alguna carga de saldo; si nunca la ha tenido, el consumo del ciclo. La regla exacta la decides tú.',
+  '<b>Vocabulario:</b> todo se cuenta en accesos (un acceso es una ventana de 30 días para un paciente). No se muestran recuentos de pacientes junto a los de accesos, porque un paciente puede gastar varios y la cifra confunde.',
+  '<b>«Accesos consumidos» y «Próxima factura» son estimaciones</b> con el ciclo de Stripe (decidido: nada de mes natural; se acepta la consulta).',
+  '<b>Manual:</b> en lugar de próxima factura, lo consumido por encima del saldo. No hay cobro automático.',
+  '<b>Accesos abiertos ahora:</b> ventanas abiertas, con inicio y fin. Un paciente con sesión asignada y sin empezar sale como «sin acceso todavía».'
+ ],
+ inv:[
+  '<b>La pestaña «Meses NeuronUP2GO asignados» pasa a llamarse «NeuronUP2GO».</b> El histórico antiguo no se enseña.',
+  '<b>Filtro por ciclo de Stripe</b> en las cuentas de Stripe (selector con el ciclo actual y los anteriores). En enterprise, rango de fechas, porque no hay ciclo de Stripe.',
+  '<b>Columnas:</b> inicio (con el fin debajo), usuario, profesional, ventana activa o terminada, y quién la cubre. Se quita «reportado a Stripe».',
+  '<b>«Cubierto por»:</b> saldo, periodo de prueba o «entra en factura» en Stripe; en enterprise, «cubierto por saldo» o «por encima del saldo».',
+  '<b>Coste estimado:</b> mensual, accesos × precio del tramo; anual y mid-market, 0 € mientras lo cubra el saldo; enterprise, «incluido» más lo que pase del saldo.',
+  '<b>Sin origen del saldo:</b> solo un saldo, sin desglose por procedencia (decidido). Se enseña la cifra, sin «de X»: los meses convertidos se mezclan con los packs de Black Friday y no hay un total que tenga sentido.'
+ ],
+ sub:[
+  '<b>Manual:</b> sin método de pago de Stripe; la forma de pago es la del acuerdo. Desactivado lleva a «Contactar con ventas», la conversión que ya existe.',
+  '<b>Impago en manual, sin decidir:</b> la app no corta sola porque no hay Stripe. En la maqueta, aviso informativo y servicio activo; administración gestiona el cobro. Confirmar con administración qué se hace si no paga.',
+  '<b>NeuronUP2GO entra como una funcionalidad más</b> en «Funcionalidades incluidas», con su estado a la derecha. No tiene botón de cancelar: si no se usa, no cuesta.',
+  '<b>Activo:</b> consumo del ciclo y estimado. <b>Desactivado:</b> en gris, «no incluido», con «Ponte en contacto con ventas» en los dos canales. <b>Impago:</b> un solo estado «pendiente de pago» en la fila de NeuronUP2GO, y la factura concreta en «Próxima renovación».',
+  '<b>Aviso de impago (plan anual):</b> 4 reintentos en una semana; mientras tanto sigue con acceso. Si no se paga, se retira NeuronUP2GO hasta que se regularice; el resto del plan sigue. Fechas e importe del ejemplo inventados.',
+  '<b>Si la factura impagada incluye el plan</b> (plan mensual o mes de la renovación anual), se cancela toda la suscripción. Con la cuenta Stripe mensual se ve ese caso.',
+  '<b>Por decidir contigo:</b> qué pasa con los pacientes que tienen la ventana abierta cuando se retira NeuronUP2GO.'
+ ]
+};
+
+var NOTE_STRIPE=['<b>Todo lo que pasa por Stripe es automático</b>, también el cobro de lo que pase del saldo. Si ventas quiere negociar el exceso con un cliente, ese cliente tiene que ir como manual.','<b>Anual y mid-market se comportan igual en la app.</b> Solo cambia de dónde sale el saldo (meses migrados o tope del tramo × 12). La diferencia real es plan mensual (una factura) o anual (NeuronUP2GO en factura aparte).','<b>Precio único:</b> 9,90 € sin IVA por acceso (Lucía, 22/10). Los descuentos por volumen van en campañas. La recarga mensual automática queda fuera.'];
+var NOTE_MAN={
+ full:['<b>Manual funciona igual para enterprise y mid-market.</b> La plataforma no sabe qué segmento es: ventas lo organiza fuera, con HubSpot.','<b>Saldo completo (acordado el 21/10):</b> todo el saldo del año cargado al firmar, uso libre, nunca se corta. Lo que pase se revisa en la renovación. Alertas al 85 % para ventas, a cargo de operaciones.','<b>Si un manual pasa por Stripe, se vuelve automático</b> y el exceso se cobra solo.'],
+ rec:['<b>En validación:</b> si la recarga mensual se mantiene. Aquí se completa hasta los accesos contratados (no acumula); César la tiene programada sumando, y está sin decidir.','<b>Sin Stripe no hay recarga automática:</b> administración tendría que cargar el saldo a mano cada mes. Pasarla por Stripe la haría automática, y también el cobro del exceso.','<b>Manual funciona igual para enterprise y mid-market.</b>']
+};
+
+var INTRO = {
+ mon:{no:'<b>Sin exceso.</b> El centro todavía tiene saldo (meses migrados o packs). Los accesos del ciclo se descuentan del saldo y NeuronUP2GO sale a 0 €; en plan mensual ni siquiera aparece la línea en la factura.',
+      si:'<b>Con exceso.</b> El saldo se agotó a mitad de ciclo. Los 4 accesos que no cubre se cobran solos a mes vencido, a 9,90 € cada uno, en la misma factura del plan. No se corta nada y no hay negociación posible, porque va por Stripe.'},
+ ann:{no:'<b>Sin exceso.</b> El centro tiene saldo: meses migrados o, en mid-market por cotización, el tope del tramo × 12 cargado al contratar. NeuronUP2GO llega en una factura aparte del plan anual, a 0 € mientras quede saldo.',
+      si:'<b>Con exceso.</b> El saldo se agotó a mitad de ciclo. Los 9 accesos que no cubre se cobran solos, a 9,90 € cada uno, en la factura mensual de NeuronUP2GO, separada del plan anual. Si ventas quería negociar este exceso, el cliente tendría que haber ido como manual.'},
+ full:{no:'<b>Sin exceso.</b> El centro tiene todo el saldo del año desde la firma (180 accesos en el ejemplo) y lo usa como quiere. Mientras quede saldo no cambia nada. Operaciones avisará a ventas al llegar al 85 % (alerta por montar) para hablar con el cliente antes de que se agote.',
+       si:'<b>Con exceso.</b> El centro gastó los 180 accesos antes de la renovación. No se corta nada ni se cobra automáticamente: los 12 accesos de más quedan medidos y ventas decide en la renovación si los regala, los factura o amplía el volumen. Si el contrato permite facturarlos cuando el centro no renueva está pendiente de administración y legal.'},
+ rec:{no:'<b>Sin exceso.</b> Cada día 1 el saldo se completa hasta los 15 accesos contratados (modelo en validación). Este mes el centro ha usado 11; los 4 que sobran no pasan al mes siguiente.',
+      si:'<b>Con exceso.</b> Este mes el centro ha usado 19 de 15 accesos. No se corta nada: los 4 de más se miden y se revisan en la renovación. El 1 de noviembre el saldo vuelve a 15.'}
+};
+var INTRO_SUB = {
+ on:{stripe:'<b>Addon activo.</b> NeuronUP2GO aparece como una funcionalidad más de la suscripción, con el consumo del ciclo y el importe estimado.', manual:'<b>Addon activo.</b> NeuronUP2GO aparece como una funcionalidad más, incluida en el acuerdo, sin importes.'},
+ off:{stripe:'<b>Addon desactivado.</b> El centro no tiene NeuronUP2GO. La fila sale en gris con «Ponte en contacto con ventas», la conversión que ya existe hoy. Más adelante podría automatizarse como alta desde la propia suscripción; de salida, igual que manual.', manual:'<b>Addon desactivado.</b> El acuerdo no incluye NeuronUP2GO. La fila lleva a «Ponte en contacto con ventas», la conversión que ya existe hoy.'},
+ due:{mon:'<b>Impago.</b> No se ha podido cobrar la factura mensual, que incluye el plan y NeuronUP2GO. Stripe reintenta 4 veces en una semana y el centro sigue trabajando; si no se paga, se cancela toda la suscripción.',
+      ann:'<b>Impago.</b> No se ha podido cobrar la factura de NeuronUP2GO, que va aparte del plan anual. Stripe reintenta 4 veces en una semana; si no se paga, se corta solo NeuronUP2GO y el resto del plan sigue. El centro paga desde la app y se reactiva solo.',
+      manual:'<b>Impago, sin decidir.</b> Sin Stripe la app no puede cortar sola. Propuesta de la maqueta: aviso informativo, servicio activo y administración gestionando el cobro. Falta que administración diga qué se hace si el centro no paga.'}
+};
+var INTRO_FIRST = {
+ aviso:{stripe:'<b>Primera vez que un profesional utiliza el nuevo modelo.</b> Sale la primera vez que pone algo «para casa», sea una sesión o un programa: desde el diálogo de una sesión, el asistente de sesiones, el asistente de programas o el diálogo de una sesión de programa. Hay que aceptarlo para continuar, y aceptar no cobra nada: el acceso se consume cuando el paciente empieza. En Stripe enseña el precio por acceso (9,90 € sin IVA).',
+        manual:'<b>Primera vez que un profesional utiliza el nuevo modelo.</b> Sale la primera vez que pone algo «para casa», sea una sesión o un programa: desde el diálogo de una sesión, el asistente de sesiones, el asistente de programas o el diálogo de una sesión de programa. Hay que aceptarlo para continuar, y aceptar no cobra nada. En manual no hay precio: se descuenta del saldo del acuerdo y, si se agota, no se corta nada.'},
+ perm:{stripe:'<b>Profesional sin permiso de NeuronUP2GO.</b> No se bloquean botones: sale el banner de acceso restringido con «Solicitar información». Si sigue adelante, recibe un error. Igual en Stripe y en manual.',
+       manual:'<b>Profesional sin permiso de NeuronUP2GO.</b> No se bloquean botones: sale el banner de acceso restringido con «Solicitar información». Si sigue adelante, recibe un error. Igual en Stripe y en manual.'},
+ noadd:{stripe:'<b>Centro sin NeuronUP2GO.</b> Se sale con la conversión que ya existe hoy, «Ponte en contacto con ventas», igual que en manual. Más adelante podría automatizarse (alta desde la propia suscripción), pero no entra en esta salida.',
+        manual:'<b>Centro sin NeuronUP2GO en el acuerdo.</b> Es el único bloqueo que queda en el producto. Lleva a «Ponte en contacto con ventas», la conversión que ya existe hoy.'},
+ dia:{stripe:'<b>Día a día.</b> Una vez aceptado el aviso, los modals vuelven a ser los de producción, sin nada de consumo.',manual:'<b>Día a día.</b> Una vez aceptado el aviso, los modals vuelven a ser los de producción, sin nada de consumo.'},
+ rec:{stripe:'<b>Día a día con recordatorio.</b> Variante con la frase «pueden suponer un pago adicional» que añadió César. Recuerda que hay facturación, nunca cuánta.',manual:'<b>Día a día con recordatorio.</b> Variante con la frase «pueden suponer un pago adicional» que añadió César. En manual conviene revisar el texto, porque no hay pago adicional automático.'},
+ prog:{stripe:'<b>Programas.</b> El asistente de programas tiene su propio interruptor «Programa para casa» en el paso 1 y el único aviso de programas en el paso 2, solo si la planificación cruza de mes. Las sesiones del programa se abren con su propio diálogo.',manual:'<b>Programas.</b> El asistente de programas tiene su propio interruptor «Programa para casa» en el paso 1 y el único aviso de programas en el paso 2, solo si la planificación cruza de mes. Las sesiones del programa se abren con su propio diálogo.'}
+};
+var INTRO_PROF={si:'<b>Permiso de NeuronUP2GO por profesional.</b> Se adecua el interruptor que ya existe en Administración › Profesionales › Permisos. El contrato lo necesita: es lo que sostiene que el consumo lo decide el centro. Se cambia el texto de ayuda (?) para que diga que activar el permiso genera consumo.',
+ no:'<b>Profesional sin permiso.</b> Con el interruptor en NO, el profesional prepara sesiones pero al enviarlas a casa ve «acceso restringido» y puede pedírselo al administrador (ver Modals › Sin permiso).'};
+var INTRO_FLOW={tar:'<b>Flujo de la tabla de tarifas.</b> No es una pantalla de la app: lo hace marketing fuera. Se declara aquí porque el aviso de primer uso depende de él.',
+ mail:'<b>Flujo del correo de saldo agotado.</b> No es una pantalla de la app: lo hace operaciones fuera, con el dato de saldo de la plataforma. Incluye la alerta interna del 85 %.'};
+function intro(){
+  if(S.screen==='prof') return INTRO_PROF[S.perm];
+  if(S.screen==='flows') return INTRO_FLOW[S.flow];
+  if(S.screen==='modals') return INTRO_FIRST[S.fu][S.chan];
+  if(S.screen==='sub'){var x=INTRO_SUB[S.sub]; return S.sub==='due' ? (S.chan==='manual'?x.manual:x[S.plan]) : x[S.chan];}
+  return INTRO[S.chan==='manual'?S.mmod:S.plan][S.exc];
+}
+
+/* ================= render ================= */
+function render(){
+  document.querySelectorAll('.seg').forEach(function(g){var k=g.getAttribute('data-k');g.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-v')===S[k]));});});
+  syncAcct();
+  document.getElementById('g-plan').hidden = (S.chan!=='stripe');
+  document.getElementById('g-mmod').hidden = (S.chan!=='manual');
+  var allowed = SCREENS[S.acct]; if(allowed.indexOf(S.screen)<0) S.screen='page';
+  document.querySelectorAll('.subwrap').forEach(function(w){w.hidden = allowed.indexOf(w.dataset.scr)<0; w.classList.toggle('on', S.screen===w.dataset.scr);});
+  document.querySelectorAll('.seg').forEach(function(g){var k=g.getAttribute('data-k');g.querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-v')===S[k]));});});
+  var html = S.screen==='flows'? flows() : S.screen==='prof'? prof() : S.screen==='modals'? modals() : S.screen==='page'? page() : S.screen==='inv'? inv() : sub();
+  var appEl=document.getElementById('app'); appEl.innerHTML = html; appEl.classList.toggle('bare', S.screen==='modals'||S.screen==='flows');
+  if(S.ex==='1') appEl.querySelectorAll('.ph').forEach(function(e){var k=e.textContent.replace(/[{}]/g,''); if(EXV[k]){e.textContent=EXV[k]; e.className='exv';}});
+  var n=document.getElementById('notes');
+  n.hidden = (S.notes!=='1');
+  var ctx = 'Cuenta: '+A[S.acct].label+(S.acct==='ent'?'':' · alta el '+A[S.acct].alta);
+  var EXTRA = S.chan==='stripe' ? NOTE_STRIPE : NOTE_MAN[S.mmod];
+  n.innerHTML = '<h4>Notas · '+ctx+'</h4><p class="nintro">'+intro()+'</p><ul>'+EXTRA.concat(NOTES[S.screen]).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
+}
+document.getElementById('ctl').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  var k=b.closest('[data-k]').getAttribute('data-k'); S[k]=b.getAttribute('data-v'); var w=b.closest('.subwrap'); if(w && !b.classList.contains('scr')) S.screen=w.dataset.scr; render();
+});
+render();
+})();
+</script>
+
+
+</html>
